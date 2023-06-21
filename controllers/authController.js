@@ -85,9 +85,8 @@ async function login(req, res, next) {
     // Generate JWT with userid, username, user group
     const token = jwt.sign(
       {
-        id: user.id,
-        username: user.username,
-        userGroup: user.userGroup,
+        username: user[0].username,
+        userGroup: user[0].userGroup,
       },
       process.env.JWT_SECRET
     );
