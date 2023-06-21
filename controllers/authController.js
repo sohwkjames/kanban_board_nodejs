@@ -4,7 +4,7 @@ const bcrypt = require("bcryptjs");
 const mysql = require("mysql");
 const { USER_GROUPS } = require("../utils/userGroups");
 const { isValidPassword } = require("../utils/auth");
-
+const { getUserFromUsername } = require("./userController");
 const config = {
   host: "localhost",
   user: "root",
@@ -16,17 +16,17 @@ connection = mysql.createConnection(config);
 
 const saltRounds = 10;
 
-async function getUserFromUsername(username) {
-  const sql = "SELECT * FROM accounts WHERE username = ?";
-  return new Promise((resolve, reject) => {
-    connection.query(sql, [username], function (err, results, fields) {
-      if (err) {
-        reject(err);
-      }
-      resolve(results);
-    });
-  });
-}
+// async function getUserFromUsername(username) {
+//   const sql = "SELECT * FROM accounts WHERE username = ?";
+//   return new Promise((resolve, reject) => {
+//     connection.query(sql, [username], function (err, results, fields) {
+//       if (err) {
+//         reject(err);
+//       }
+//       resolve(results);
+//     });
+//   });
+// }
 
 async function addUserToDb(username, hashedPassword, email) {
   const sql =
@@ -46,18 +46,6 @@ async function addUserToDb(username, hashedPassword, email) {
       }
     );
   });
-}
-
-async function CheckGroup(userid, groupname) {
-  try {
-    const user = await getUserFromUsername(userid);
-    if (user[0].userGroup === groupname) {
-      return true;
-    }
-    return false;
-  } catch {
-    throw new Error("Invalid userid or groupname");
-  }
 }
 
 async function login(req, res, next) {
@@ -95,6 +83,7 @@ async function login(req, res, next) {
     res.status(200).send({
       success: true,
       token: token,
+      userGroup: user[0].userGroup,
     });
   } catch {
     res.send({
@@ -144,14 +133,27 @@ async function register(req, res, next) {
 }
 
 async function checkUserGroup(req, res, next) {
-  const { username, usergroup } = req.body;
-  const isUserInGroup = await CheckGroup(username, usergroup);
-
-  // Result is boolean
-  return res.send({
-    success: true,
-    result: isUserInGroup,
-  });
+  const { groupname } = req.body;
+  const username = req.user.username;
+  const isUserInGroup = await CheckGroup(username, groupname);
+  if (isUserInGroup) {
+    return res.status(200).send({
+      success: true,
+    });
+  } else {
+    return res.status(401).send({
+      success: false,
+    });
+  }
 }
 
-module.exports = { login, register, checkUserGroup };
+async function CheckGroup(userid, groupname) {
+  const user = await getUserFromUsername(userid);
+  if (user.length === 0) return false;
+  if (user[0].userGroup === groupname) {
+    return true;
+  }
+  return false;
+}
+
+module.exports = { login, checkUserGroup };

@@ -15,7 +15,7 @@ app.use(function (req, res, next) {
   next();
 });
 
-const authRoutes = require("./routes/auth");
+const authRoutes = require("./routes/routes");
 app.use(authRoutes);
 
 const PORT = process.env.PORT || 3001;
