@@ -3,6 +3,7 @@ const { sendToken } = require("../utils/jwtToken");
 const bcrypt = require("bcryptjs");
 const mysql = require("mysql");
 const { USER_GROUPS } = require("../utils/userGroups");
+const { isValidPassword } = require("../utils/auth");
 
 const config = {
   host: "localhost",
@@ -29,12 +30,14 @@ async function getUserFromUsername(username) {
 
 async function addUserToDb(username, hashedPassword, email) {
   const sql =
-    "INSERT INTO accounts (username, password, email, userGroup) VALUES (?, ?, ?, ?)";
-  const userGroup = 1;
+    "INSERT INTO accounts (username, password, email, userGroup, isActive) VALUES (?, ?, ?, ?, ?)";
+  const userGroup = USER_GROUPS.user;
+  const isActive = 1;
+
   return new Promise((resolve, reject) => {
     connection.query(
       sql,
-      [username, hashedPassword, email, userGroup],
+      [username, hashedPassword, email, userGroup, isActive],
       function (err, result, fields) {
         if (err) {
           reject(err);
@@ -43,6 +46,18 @@ async function addUserToDb(username, hashedPassword, email) {
       }
     );
   });
+}
+
+async function CheckGroup(userid, groupname) {
+  try {
+    const user = await getUserFromUsername(userid);
+    if (user[0].userGroup === groupname) {
+      return true;
+    }
+    return false;
+  } catch {
+    throw new Error("Invalid userid or groupname");
+  }
 }
 
 async function login(req, res, next) {
@@ -56,14 +71,14 @@ async function login(req, res, next) {
     if (!isValidCredentials) {
       return res.send({
         success: false,
-        err: "Invalid username or password",
+        message: "Invalid username or password",
       });
     }
 
     if (!user[0].isActive) {
       return res.send({
         success: false,
-        err: "User is not active. Please contact admin.",
+        message: "User is not active. Please contact admin.",
       });
     }
 
@@ -85,13 +100,37 @@ async function login(req, res, next) {
   } catch {
     res.send({
       success: false,
-      err: "Invalid username or password",
+      message: "Invalid username or password",
     });
   }
 }
 
 async function register(req, res, next) {
   const { username, password, email } = req.body;
+
+  // Check if username exists
+  const user = await getUserFromUsername(username);
+  if (user.length) {
+    return res.send({
+      success: false,
+      message: "Username already exists",
+    });
+  }
+
+  if (!username) {
+    return res.send({
+      success: false,
+      message: "Must have username.",
+    });
+  }
+
+  if (!isValidPassword(password)) {
+    return res.send({
+      success: false,
+      message:
+        "Password must be 8-10 characters, contain at least 1 number, at least 1 character, and at least 1 special character.",
+    });
+  }
 
   const hashedPassword = await bcrypt.hash(password, saltRounds);
 
@@ -105,4 +144,15 @@ async function register(req, res, next) {
   });
 }
 
-module.exports = { login };
+async function checkUserGroup(req, res, next) {
+  const { username, usergroup } = req.body;
+  const isUserInGroup = await CheckGroup(username, usergroup);
+
+  // Result is boolean
+  return res.send({
+    success: true,
+    result: isUserInGroup,
+  });
+}
+
+module.exports = { login, register, checkUserGroup };
