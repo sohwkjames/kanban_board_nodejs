@@ -16,18 +16,6 @@ connection = mysql.createConnection(config);
 
 const saltRounds = 10;
 
-// async function getUserFromUsername(username) {
-//   const sql = "SELECT * FROM accounts WHERE username = ?";
-//   return new Promise((resolve, reject) => {
-//     connection.query(sql, [username], function (err, results, fields) {
-//       if (err) {
-//         reject(err);
-//       }
-//       resolve(results);
-//     });
-//   });
-// }
-
 async function addUserToDb(username, hashedPassword, email) {
   const sql =
     "INSERT INTO accounts (username, password, email, userGroup, isActive) VALUES (?, ?, ?, ?, ?)";
@@ -53,7 +41,6 @@ async function login(req, res, next) {
 
   try {
     const user = await getUserFromUsername(username);
-    console.log("user is", user[0]);
     const isValidCredentials = await bcrypt.compare(password, user[0].password);
 
     if (!isValidCredentials) {
@@ -124,8 +111,6 @@ async function register(req, res, next) {
 
   const result = await addUserToDb(username, hashedPassword, email);
 
-  console.log("result is", result);
-
   res.status(200).send({
     success: true,
     result,
@@ -143,6 +128,7 @@ async function checkUserGroup(req, res, next) {
   } else {
     return res.status(401).send({
       success: false,
+      message: "You are not authorized to access this resource",
     });
   }
 }

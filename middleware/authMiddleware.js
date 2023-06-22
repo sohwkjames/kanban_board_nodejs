@@ -12,34 +12,29 @@ async function isAuthenticatedUser(req, res, next) {
     req.headers.authorization.startsWith("Bearer")
   ) {
     token = req.headers.authorization.split(" ")[2];
-    console.log("Token after split:", token);
   }
 
   if (!token) {
-    return res.status(401).send({
+    return res.send({
       success: false,
       message: "You are not an authorized user",
     });
   }
-
   const decoded = jwt.verify(token, process.env.JWT_SECRET);
-  console.log("decoded jwt", decoded);
 
   // Get the user
   const user = await getUserFromUsername(decoded.username);
-  console.log("user:", user[0]);
 
   req.user = user[0];
 
   next();
 }
 
-function authorizeUserGroups(...allowedGroups) {
+function authorizeUserGroups(allowedGroups) {
   return (req, res, next) => {
-    console.log("in authmiddleware, req.user is", req.user);
-    console.log("in authmiddleware, groups is", ...allowedGroups);
     if (!allowedGroups.includes(req.user.userGroup)) {
-      res.send({
+      console.log("in the disallow branch");
+      return res.send({
         success: false,
         message: "You do not have permission to access this.",
       });

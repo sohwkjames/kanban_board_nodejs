@@ -28,16 +28,30 @@ async function getUserFromUsername(username) {
   });
 }
 
-async function addUserToDb(username, hashedPassword, email) {
+async function getAllUsers() {
+  const sql = "SELECT username, userGroup, email, isActive FROM ACCOUNTS";
+  return new Promise((resolve, reject) => {
+    connection.query(sql, [], function (err, results, fields) {
+      if (err) reject(err);
+      resolve(results);
+    });
+  });
+}
+
+async function addUserToDb(
+  username,
+  hashedPassword,
+  email,
+  isActive,
+  userGroup
+) {
   const sql =
-    "INSERT INTO accounts (username, password, email, userGroup, isActive) VALUES (?, ?, ?, ?, ?)";
-  const userGroup = USER_GROUPS.user;
-  const isActive = 1;
+    "INSERT INTO accounts (username, password, email, isActive, userGroup) VALUES (?, ?, ?, ?, ?)";
 
   return new Promise((resolve, reject) => {
     connection.query(
       sql,
-      [username, hashedPassword, email, userGroup, isActive],
+      [username, hashedPassword, email, isActive, userGroup],
       function (err, result, fields) {
         if (err) {
           reject(err);
@@ -49,8 +63,9 @@ async function addUserToDb(username, hashedPassword, email) {
 }
 
 async function register(req, res, next) {
-  const { username, password, email } = req.body;
+  const { username, password, email, isActive, userGroup } = req.body;
 
+  console.log("params are", isActive, userGroup);
   // Check if username exists
   const user = await getUserFromUsername(username);
   if (user.length) {
@@ -77,9 +92,15 @@ async function register(req, res, next) {
 
   const hashedPassword = await bcrypt.hash(password, saltRounds);
 
-  const result = await addUserToDb(username, hashedPassword, email);
+  console.log("userController awaiting write to db");
 
-  console.log("result is", result);
+  const result = await addUserToDb(
+    username,
+    hashedPassword,
+    email,
+    isActive,
+    userGroup
+  );
 
   res.status(200).send({
     success: true,
@@ -87,4 +108,29 @@ async function register(req, res, next) {
   });
 }
 
-module.exports = { register, getUserFromUsername };
+async function getCurrentUserDetails(req, res, next) {
+  // isAuthenticatedUser middleware must fire before this
+  if (req.user) {
+    const sanitizedUserObj = {
+      username: req.user.username,
+      isActive: req.user.isActive,
+      userGroup: req.user.userGroup,
+      email: req.user.email,
+    };
+    res.send({ success: true, data: sanitizedUserObj });
+  } else {
+    res.send({ success: false });
+  }
+}
+
+async function allUsers(req, res, next) {
+  const users = await getAllUsers();
+  res.send({ success: true, data: users });
+}
+
+module.exports = {
+  register,
+  getUserFromUsername,
+  getCurrentUserDetails,
+  allUsers,
+};

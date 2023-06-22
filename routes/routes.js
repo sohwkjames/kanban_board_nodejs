@@ -3,6 +3,8 @@ const router = express.Router();
 
 const authController = require("../controllers/authController");
 const userController = require("../controllers/userController");
+const userGroupController = require("../controllers/userGroupController");
+
 const {
   isAuthenticatedUser,
   authorizeUserGroups,
@@ -16,9 +18,26 @@ router
     authorizeUserGroups(["admin"]),
     userController.register
   );
-router.route("/admin").get();
+router
+  .route("/users")
+  .get(
+    isAuthenticatedUser,
+    authorizeUserGroups(["admin"]),
+    userController.allUsers
+  );
+router
+  .route("/usergroups")
+  .get(
+    isAuthenticatedUser,
+    authorizeUserGroups(["admin"]),
+    userGroupController.getAll
+  );
 router
   .route("/checkusergroup")
   .post(isAuthenticatedUser, authController.checkUserGroup);
+
+router
+  .route("/get_current_user")
+  .get(isAuthenticatedUser, userController.getCurrentUserDetails);
 
 module.exports = router;
