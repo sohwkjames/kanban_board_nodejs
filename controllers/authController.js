@@ -16,7 +16,7 @@ connection = mysql.createConnection(config);
 
 const saltRounds = 10;
 
-async function addUserToDb(username, hashedPassword, email) {
+async function createUser(username, hashedPassword, email) {
   const sql =
     "INSERT INTO accounts (username, password, email, userGroup, isActive) VALUES (?, ?, ?, ?, ?)";
   const userGroup = USER_GROUPS.user;
@@ -109,7 +109,7 @@ async function register(req, res, next) {
 
   const hashedPassword = await bcrypt.hash(password, saltRounds);
 
-  const result = await addUserToDb(username, hashedPassword, email);
+  const result = await createUser(username, hashedPassword, email);
 
   res.status(200).send({
     success: true,

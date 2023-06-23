@@ -14,6 +14,8 @@ async function isAuthenticatedUser(req, res, next) {
     token = req.headers.authorization.split(" ")[2];
   }
 
+  console.log("middleware, token is", token);
+
   if (!token) {
     return res.send({
       success: false,

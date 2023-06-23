@@ -18,6 +18,15 @@ router
     authorizeUserGroups(["admin"]),
     userController.register
   );
+
+router
+  .route("/user")
+  .put(
+    isAuthenticatedUser,
+    authorizeUserGroups(["admin"]),
+    userController.update
+  );
+
 router
   .route("/users")
   .get(

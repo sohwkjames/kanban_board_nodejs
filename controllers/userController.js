@@ -38,7 +38,7 @@ async function getAllUsers() {
   });
 }
 
-async function addUserToDb(
+async function createUser(
   username,
   hashedPassword,
   email,
@@ -94,7 +94,7 @@ async function register(req, res, next) {
 
   console.log("userController awaiting write to db");
 
-  const result = await addUserToDb(
+  const result = await createUser(
     username,
     hashedPassword,
     email,
@@ -123,9 +123,64 @@ async function getCurrentUserDetails(req, res, next) {
   }
 }
 
+async function updateHelper(
+  username,
+  hashedPassword,
+  email,
+  isActive,
+  userGroup
+) {
+  const sql =
+    "UPDATE accounts SET password=?, email=?, isActive=?, userGroup=? WHERE username=?";
+
+  return new Promise((resolve, reject) => {
+    connection.query(
+      sql,
+      [hashedPassword, email, isActive, userGroup, username],
+      function (err, results, fields) {
+        if (err) reject(err);
+        resolve(results);
+      }
+    );
+  });
+}
+
 async function allUsers(req, res, next) {
   const users = await getAllUsers();
   res.send({ success: true, data: users });
+}
+
+async function update(req, res, next) {
+  // Middleware attaches the admin user object to this request.
+  // User to update is in request body.
+  const { username, password, email, isActive, userGroup } = req.body;
+
+  // Check if password pass constraints
+  if (!isValidPassword(password)) {
+    return res.send({
+      success: false,
+      message:
+        "Password must be 8-10 characters, contain number and special character",
+    });
+  }
+  // Hash the password
+  const hashedPassword = await bcrypt.hash(password, saltRounds);
+
+  // send update sql
+  try {
+    const result = await updateHelper(
+      username,
+      hashedPassword,
+      email,
+      isActive,
+      userGroup
+    );
+
+    console.log("Sending response suces");
+    res.send({ success: true, result, message: "User updated successfully" });
+  } catch {
+    res.send({ success: false, message: "Failed to update user" });
+  }
 }
 
 module.exports = {
@@ -133,4 +188,5 @@ module.exports = {
   getUserFromUsername,
   getCurrentUserDetails,
   allUsers,
+  update,
 };
