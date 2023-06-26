@@ -41,6 +41,15 @@ router
     authorizeUserGroups(["admin"]),
     userGroupController.getAll
   );
+
+router
+  .route("/usergroups")
+  .post(
+    isAuthenticatedUser,
+    authorizeUserGroups(["admin"]),
+    userGroupController.add
+  );
+
 router
   .route("/checkusergroup")
   .post(isAuthenticatedUser, authController.checkUserGroup);

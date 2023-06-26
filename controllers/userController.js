@@ -176,7 +176,6 @@ async function update(req, res, next) {
       userGroup
     );
 
-    console.log("Sending response suces");
     res.send({ success: true, result, message: "User updated successfully" });
   } catch {
     res.send({ success: false, message: "Failed to update user" });

@@ -41,4 +41,33 @@ async function getAll(req, res, next) {
   }
 }
 
-module.exports = { getAll };
+async function addHelper(groupName) {
+  const sql = "INSERT INTO usergroups (groupname) VALUES (?)";
+  return new Promise((resolve, reject) => {
+    connection.query(sql, [groupName], (err, result, fields) => {
+      if (err) reject(err);
+      resolve(result);
+    });
+  });
+}
+
+async function add(req, res, next) {
+  const { groupName } = req.body;
+  let result;
+
+  try {
+    result = await addHelper(groupName);
+    return res.send({
+      success: true,
+      message: "Group added successfully",
+      groupName: groupName,
+    });
+  } catch (err) {
+    return res.send({
+      success: false,
+      message: err.message,
+    });
+  }
+}
+
+module.exports = { getAll, add };
