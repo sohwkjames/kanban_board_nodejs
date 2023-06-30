@@ -41,10 +41,13 @@ async function getCompleteUser(username) {
 
 async function getAllUsers() {
   const sql = "SELECT username, email, isActive FROM ACCOUNTS";
+  let userList = [];
   return new Promise((resolve, reject) => {
     connection.query(sql, [], function (err, results, fields) {
       if (err) reject(err);
-      resolve(results);
+      console.log("Results", results);
+      results.forEach((user) => console.log("Working on ", user.username));
+      // resolve(results);
     });
   });
 }
@@ -129,8 +132,32 @@ async function getCurrentUserDetails(req, res, next) {
 }
 
 async function allUsers(req, res, next) {
-  const users = await getAllUsers();
-  res.send({ success: true, data: users });
+  // const users = await getAllUsers();
+  let userArr = [];
+  const sql = "SELECT username, email, isActive FROM ACCOUNTS";
+  connection.query(sql, [], function (err, users, fields) {
+    if (err) reject(err);
+    users.forEach(async (user) => {
+      const sql =
+        "SELECT usergroup FROM username_usergroup_pivot WHERE username = ?";
+      connection.query(
+        sql,
+        [user.username],
+        function (err, userGroups, fields) {
+          console.log(
+            "Working on",
+            user.username,
+            "usergroups are:",
+            userGroups
+          );
+        }
+      );
+      // console.log("Working on ", user);
+      // connection.query();
+    });
+  });
+
+  // res.send({ success: true, data: users });
 }
 
 async function update(req, res, next) {

@@ -75,10 +75,12 @@ async function addUserGroupsToUser(username, groupnames) {
   let values = [];
   if (!groupnames) return;
   groupnames.forEach((name) => values.push([username, name]));
+  console.log("Adding groupnames", values);
+
   const sql =
-    "INSERT INTO username_usergroup_pivot (username, usergroup) VALUES (?)";
+    "INSERT INTO username_usergroup_pivot (username, usergroup) VALUES ?";
   return new Promise((resolve, reject) => {
-    connection.query(sql, values, function (err, results, fields) {
+    connection.query(sql, [values], function (err, results, fields) {
       if (err) reject(err);
       else resolve(results);
     });
