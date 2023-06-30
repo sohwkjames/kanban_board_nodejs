@@ -82,7 +82,11 @@ async function addUserGroupsToUser(username, groupnames) {
   return new Promise((resolve, reject) => {
     connection.query(sql, [values], function (err, results, fields) {
       if (err) reject(err);
-      else resolve(results);
+      else {
+        console.log("Results", results);
+
+        resolve(results);
+      }
     });
   });
 }

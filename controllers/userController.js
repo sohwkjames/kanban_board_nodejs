@@ -17,59 +17,6 @@ connection = mysql.createConnection(config);
 
 const saltRounds = 10;
 
-async function getUser(username) {
-  // Returns user object without joins
-  const sql = "SELECT * FROM accounts WHERE username = ?";
-  return new Promise((resolve, reject) => {
-    connection.query(sql, [username], function (e, results, fields) {
-      if (e) reject(e);
-      resolve(results);
-    });
-  });
-}
-
-// This method
-async function getCompleteUser(username) {
-  // This method returns a complete user object with all the usergroups etc.
-
-  const user = await getUser(username);
-  const groups = await getUserGroups(username);
-  user[0].userGroups = groups;
-
-  return user;
-}
-
-async function getAllUsers() {
-  const sql = "SELECT username, email, isActive FROM ACCOUNTS";
-  let userList = [];
-  return new Promise((resolve, reject) => {
-    connection.query(sql, [], function (err, results, fields) {
-      if (err) reject(err);
-      console.log("Results", results);
-      results.forEach((user) => console.log("Working on ", user.username));
-      // resolve(results);
-    });
-  });
-}
-
-async function createUser(username, hashedPassword, email, isActive) {
-  const sql =
-    "INSERT INTO accounts (username, password, email, isActive) VALUES (?, ?, ?, ?);";
-
-  return new Promise((resolve, reject) => {
-    connection.query(
-      sql,
-      [username, hashedPassword, email, isActive],
-      function (err, result, fields) {
-        if (err) {
-          reject(err);
-        }
-        resolve(result);
-      }
-    );
-  });
-}
-
 async function create(req, res, next) {
   const { username, password, email, isActive, userGroups } = req.body;
 
@@ -132,86 +79,118 @@ async function getCurrentUserDetails(req, res, next) {
 }
 
 async function allUsers(req, res, next) {
-  // const users = await getAllUsers();
-  let userArr = [];
-  const sql = "SELECT username, email, isActive FROM ACCOUNTS";
-  connection.query(sql, [], function (err, users, fields) {
-    if (err) reject(err);
-    users.forEach(async (user) => {
-      const sql =
-        "SELECT usergroup FROM username_usergroup_pivot WHERE username = ?";
-      connection.query(
-        sql,
-        [user.username],
-        function (err, userGroups, fields) {
-          console.log(
-            "Working on",
-            user.username,
-            "usergroups are:",
-            userGroups
-          );
-        }
-      );
-      // console.log("Working on ", user);
-      // connection.query();
-    });
+  const users = await allUsersHelper();
+  const promiseArr = users.map(async (row) => {
+    const userGroups = await getUserGroups(row.username);
+    return {
+      ...row,
+      userGroups: userGroups,
+    };
   });
 
-  // res.send({ success: true, data: users });
+  const resolved = await Promise.all(promiseArr);
+
+  console.log("resolved is", resolved);
+
+  res.send({ success: true, data: resolved });
 }
 
 async function update(req, res, next) {
   // Middleware attaches the admin user object to this request.
   // User to update is in request body.
-  const { username, password, email, isActive, userGroup } = req.body;
+  const { username, password, email, isActive, userGroups } = req.body;
 
-  // Check if password pass constraints
-  if (!isValidPassword(password)) {
+  // Check if password pass constraints if request did send a password
+  if (password && !isValidPassword(password)) {
     return res.send({
       success: false,
       message:
         "Password must be 8-10 characters, contain number and special character",
     });
   }
-  // Hash the password
-  const hashedPassword = await bcrypt.hash(password, saltRounds);
 
-  // send update sql
   try {
-    const result = await updateHelper(
-      username,
-      hashedPassword,
-      email,
-      isActive,
-      userGroup
-    );
+    const updatedUser = await updateHelper(username, password, email, isActive);
 
-    res.send({ success: true, result, message: "User updated successfully" });
-  } catch {
-    res.send({ success: false, message: "Failed to update user" });
+    await deleteAllUserGroupsFromUser(username);
+    await addUserGroupsToUser(username, userGroups);
+
+    res.send({
+      success: true,
+      message: "User updated successfully",
+    });
+  } catch (e) {
+    res.send({
+      success: false,
+      message: "Failed to update user",
+      err: e.message,
+    });
   }
 }
 
-async function updateHelper(
-  username,
-  hashedPassword,
-  email,
-  isActive,
-  userGroup
-) {
-  const sql =
-    "UPDATE accounts SET password=?, email=?, isActive=?, userGroup=? WHERE username=?";
-
+async function getUser(username) {
+  // Returns user object without joins
+  const sql = "SELECT * FROM accounts WHERE username = ?";
   return new Promise((resolve, reject) => {
-    connection.query(
-      sql,
-      [hashedPassword, email, isActive, userGroup, username],
-      function (err, results, fields) {
-        if (err) reject(err);
-        resolve(results);
-      }
-    );
+    connection.query(sql, [username], function (e, results, fields) {
+      if (e) reject(e);
+      resolve(results);
+    });
   });
+}
+
+// This method
+async function getCompleteUser(username) {
+  // This method returns a complete user object with all the usergroups etc.
+
+  const user = await getUser(username);
+  const groups = await getUserGroups(username);
+  user[0].userGroups = groups;
+
+  return user;
+}
+
+async function deleteAllUserGroupsFromUser(username) {
+  const sql = "DELETE FROM username_usergroup_pivot WHERE username = ?";
+  const promise = new Promise((resolve, reject) => {
+    connection.query(sql, [username], function (err, results) {
+      if (err) reject(err);
+      resolve(results);
+    });
+  });
+}
+
+async function updateHelper(username, password, email, isActive, userGroup) {
+  if (password) {
+    const hashedPassword = await bcrypt.hash(password, saltRounds);
+
+    const sql =
+      "UPDATE accounts SET password=?, email=?, isActive=? WHERE username=?";
+
+    return new Promise((resolve, reject) => {
+      connection.query(
+        sql,
+        [hashedPassword, email, isActive, username],
+        function (err, results, fields) {
+          if (err) reject(err);
+          resolve(results);
+        }
+      );
+    });
+  } else {
+    const sql = "UPDATE accounts SET email=?, isActive=? WHERE username=?";
+
+    return new Promise((resolve, reject) => {
+      connection.query(
+        sql,
+        [email, isActive, username],
+        function (err, results, fields) {
+          if (err) reject(err);
+          resolve(results);
+        }
+      );
+    });
+  }
 }
 
 async function getUserGroups(username) {
@@ -225,6 +204,36 @@ async function getUserGroups(username) {
       const groups = results.map((record) => record.usergroup);
       resolve(groups);
     });
+  });
+}
+
+async function allUsersHelper() {
+  const sql = "SELECT username, email, isActive FROM ACCOUNTS";
+  let userList = [];
+  return new Promise((resolve, reject) => {
+    connection.query(sql, [], function (err, results, fields) {
+      if (err) reject(err);
+      console.log("Results", results);
+      resolve(results);
+    });
+  });
+}
+
+async function createUser(username, hashedPassword, email, isActive) {
+  const sql =
+    "INSERT INTO accounts (username, password, email, isActive) VALUES (?, ?, ?, ?);";
+
+  return new Promise((resolve, reject) => {
+    connection.query(
+      sql,
+      [username, hashedPassword, email, isActive],
+      function (err, result, fields) {
+        if (err) {
+          reject(err);
+        }
+        resolve(result);
+      }
+    );
   });
 }
 
