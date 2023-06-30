@@ -16,7 +16,7 @@ router
   .post(
     isAuthenticatedUser,
     authorizeUserGroups(["admin"]),
-    userController.register
+    userController.create
   );
 
 router
@@ -28,12 +28,17 @@ router
   );
 
 router
+  .route("/user")
+  .get(isAuthenticatedUser, userController.getCurrentUserDetails);
+
+router
   .route("/users")
   .get(
     isAuthenticatedUser,
     authorizeUserGroups(["admin"]),
     userController.allUsers
   );
+
 router
   .route("/usergroups")
   .get(
@@ -50,12 +55,13 @@ router
     userGroupController.add
   );
 
+// Special reqeust from client
 router
   .route("/checkusergroup")
   .post(isAuthenticatedUser, authController.checkUserGroup);
 
-router
-  .route("/get_current_user")
-  .get(isAuthenticatedUser, userController.getCurrentUserDetails);
+// router
+//   .route("/get_current_user")
+//   .get(isAuthenticatedUser, userController.getCurrentUserDetails);
 
 module.exports = router;

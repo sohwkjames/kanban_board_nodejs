@@ -4,45 +4,27 @@ const bcrypt = require("bcryptjs");
 const mysql = require("mysql");
 const { USER_GROUPS } = require("../utils/userGroups");
 const { isValidPassword } = require("../utils/auth");
-const { getUserFromUsername } = require("./userController");
+const { getCompleteUser } = require("./userController");
 const config = {
   host: "localhost",
   user: "root",
   password: process.env.LOCAL_DB_PASSWORD,
   database: process.env.LOCAL_DB_DATABASE,
+  multipleStatements: true,
 };
 
 connection = mysql.createConnection(config);
 
 const saltRounds = 10;
 
-async function createUser(username, hashedPassword, email) {
-  const sql =
-    "INSERT INTO accounts (username, password, email, userGroup, isActive) VALUES (?, ?, ?, ?, ?)";
-  const userGroup = USER_GROUPS.user;
-  const isActive = 1;
-
-  return new Promise((resolve, reject) => {
-    connection.query(
-      sql,
-      [username, hashedPassword, email, userGroup, isActive],
-      function (err, result, fields) {
-        if (err) {
-          reject(err);
-        }
-        resolve(result);
-      }
-    );
-  });
-}
-
 async function login(req, res, next) {
   const { username, password } = req.body;
 
   try {
-    const user = await getUserFromUsername(username);
+    const user = await getCompleteUser(username);
     const isValidCredentials = await bcrypt.compare(password, user[0].password);
 
+    console.log("user is", user);
     if (!isValidCredentials) {
       return res.send({
         success: false,
@@ -57,11 +39,14 @@ async function login(req, res, next) {
       });
     }
 
-    // Generate JWT with userid, username, user group
+    // Check if user is an admin
+    const isAdmin = await CheckGroup(user.username, "admin");
+
+    // Generate JWT with username only.
     const token = jwt.sign(
       {
         username: user[0].username,
-        userGroup: user[0].userGroup,
+        isAdmin: isAdmin,
       },
       process.env.JWT_SECRET
     );
@@ -70,7 +55,7 @@ async function login(req, res, next) {
     res.status(200).send({
       success: true,
       token: token,
-      userGroup: user[0].userGroup,
+      userGroups: user[0].userGroups,
     });
   } catch {
     res.send({
@@ -81,7 +66,7 @@ async function login(req, res, next) {
 }
 
 async function register(req, res, next) {
-  const { username, password, email } = req.body;
+  const { username, password, email, isActive, userGroups } = req.body;
 
   // Check if username exists
   const user = await getUserFromUsername(username);
@@ -109,7 +94,13 @@ async function register(req, res, next) {
 
   const hashedPassword = await bcrypt.hash(password, saltRounds);
 
-  const result = await createUser(username, hashedPassword, email);
+  const result = await registerHelper(
+    username,
+    hashedPassword,
+    email,
+    userGroups,
+    isActive
+  );
 
   res.status(200).send({
     success: true,
@@ -117,16 +108,52 @@ async function register(req, res, next) {
   });
 }
 
+async function registerHelper(
+  username,
+  hashedPassword,
+  email,
+  userGroups,
+  isActive
+) {
+  const sql =
+    "INSERT INTO accounts (username, password, email, isActive) VALUES (?, ?, ?, ?)";
+
+  return new Promise((resolve, reject) => {
+    connection.query(
+      sql,
+      [username, hashedPassword, email, isActive],
+      function (err, result, fields) {
+        if (err) {
+          reject(err);
+        }
+        // resolve(result);
+        console.log("Calling connection.query again");
+        const sql =
+          "INSERT INTO username_usergroup_pivot (username, usergroup) VALUES (?, ?)";
+        connection.query(
+          sql,
+          [username, userGroup],
+          function (err, result, fields) {
+            if (err) reject(err);
+            resolve(result);
+          }
+        );
+      }
+    );
+  });
+}
+
 async function checkUserGroup(req, res, next) {
   const { groupname } = req.body;
   const username = req.user.username;
   const isUserInGroup = await CheckGroup(username, groupname);
+  console.log("isUserInGroup result", isUserInGroup);
   if (isUserInGroup) {
     return res.status(200).send({
       success: true,
     });
   } else {
-    return res.status(401).send({
+    return res.send({
       success: false,
       message: "You are not authorized to access this resource",
     });
@@ -134,12 +161,21 @@ async function checkUserGroup(req, res, next) {
 }
 
 async function CheckGroup(userid, groupname) {
-  const user = await getUserFromUsername(userid);
-  if (user.length === 0) return false;
-  if (user[0].userGroup === groupname) {
-    return true;
-  }
-  return false;
+  // Returns a promise that resolves into boolean
+  const sql =
+    "SELECT * FROM username_usergroup_pivot WHERE username=? AND usergroup=?";
+  return new Promise((resolve, reject) => {
+    connection.query(sql, [userid, groupname], function (err, result, fields) {
+      if (err) {
+        reject(false);
+      }
+      if (result.length) {
+        resolve(true);
+      } else {
+        resolve(false);
+      }
+    });
+  });
 }
 
 module.exports = { login, checkUserGroup };

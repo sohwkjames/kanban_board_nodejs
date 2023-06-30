@@ -70,4 +70,25 @@ async function add(req, res, next) {
   }
 }
 
-module.exports = { getAll, add };
+async function addUserGroupsToUser(username, groupnames) {
+  // Does not check if user already has group
+  let values = [];
+  if (!groupnames) return;
+  groupnames.forEach((name) => values.push([username, name]));
+  const sql =
+    "INSERT INTO username_usergroup_pivot (username, usergroup) VALUES (?)";
+  return new Promise((resolve, reject) => {
+    connection.query(sql, values, function (err, results, fields) {
+      if (err) reject(err);
+      else resolve(results);
+    });
+  });
+}
+
+async function debug() {
+  const values = [["user1"]];
+  const sql =
+    "INSERT INTO username_usergroup_pivot (username, usergroup) VALUES ?";
+}
+
+module.exports = { getAll, add, addUserGroupsToUser, debug };
