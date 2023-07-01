@@ -42,12 +42,24 @@ async function getAll(req, res, next) {
 }
 
 async function addHelper(groupName) {
-  const sql = "INSERT INTO usergroups (groupname) VALUES (?)";
-  return new Promise((resolve, reject) => {
-    connection.query(sql, [groupName], (err, result, fields) => {
-      if (err) reject(err);
-      resolve(result);
-    });
+  // Check if usergroup already exists
+  const grpsql = "SELECT * FROM usergroups WHERE groupname= (?)";
+  connection.query(grpsql, [groupName], (err, result, fields) => {
+    if (err) {
+      reject(err);
+    } else {
+      if (result.length) {
+        resolve({ success: false, message: "Usergroup already exists" });
+      }
+
+      const sql = "INSERT INTO usergroups (groupname) VALUES (?)";
+      return new Promise((resolve, reject) => {
+        connection.query(sql, [groupName], (err, result, fields) => {
+          if (err) reject(err);
+          resolve(result);
+        });
+      });
+    }
   });
 }
 
@@ -73,9 +85,10 @@ async function add(req, res, next) {
 async function addUserGroupsToUser(username, groupnames) {
   // Does not check if user already has group
   let values = [];
-  if (!groupnames) return;
+  if (!groupnames.length) {
+    return;
+  }
   groupnames.forEach((name) => values.push([username, name]));
-  console.log("Adding groupnames", values);
 
   const sql =
     "INSERT INTO username_usergroup_pivot (username, usergroup) VALUES ?";
@@ -83,18 +96,10 @@ async function addUserGroupsToUser(username, groupnames) {
     connection.query(sql, [values], function (err, results, fields) {
       if (err) reject(err);
       else {
-        console.log("Results", results);
-
         resolve(results);
       }
     });
   });
 }
 
-async function debug() {
-  const values = [["user1"]];
-  const sql =
-    "INSERT INTO username_usergroup_pivot (username, usergroup) VALUES ?";
-}
-
-module.exports = { getAll, add, addUserGroupsToUser, debug };
+module.exports = { getAll, add, addUserGroupsToUser };

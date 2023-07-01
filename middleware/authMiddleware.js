@@ -12,11 +12,11 @@ async function isAuthenticatedUser(req, res, next) {
     req.headers.authorization &&
     req.headers.authorization.startsWith("Bearer")
   ) {
-    console.log("token true branch");
+    // console.log("token true branch");
     token = req.headers.authorization.split(" ")[2];
   }
 
-  console.log("token is", token);
+  // console.log("token is", token);
 
   if (!token) {
     return res.send({
@@ -29,6 +29,14 @@ async function isAuthenticatedUser(req, res, next) {
   // Get the user object
   const user = await getCompleteUser(decoded.username);
   req.user = user[0];
+
+  // Check if user is active. If not active, cannot do anything.
+  if (!req.user.isActive) {
+    return res.send({
+      success: false,
+      message: "User is currently inactive",
+    });
+  }
 
   // console.log("in isAuthenticatedUser calling next");
 

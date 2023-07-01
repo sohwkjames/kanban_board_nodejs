@@ -22,20 +22,14 @@ async function login(req, res, next) {
 
   try {
     const user = await getCompleteUser(username);
+    console.log("is authenticatedUser middleware, user is", user);
+
     const isValidCredentials = await bcrypt.compare(password, user[0].password);
 
-    console.log("user is", user);
     if (!isValidCredentials) {
       return res.send({
         success: false,
         message: "Invalid username or password",
-      });
-    }
-
-    if (!user[0].isActive) {
-      return res.send({
-        success: false,
-        message: "User is not active. Please contact admin.",
       });
     }
 
@@ -127,7 +121,6 @@ async function registerHelper(
           reject(err);
         }
         // resolve(result);
-        console.log("Calling connection.query again");
         const sql =
           "INSERT INTO username_usergroup_pivot (username, usergroup) VALUES (?, ?)";
         connection.query(
@@ -147,7 +140,6 @@ async function checkUserGroup(req, res, next) {
   const { groupname } = req.body;
   const username = req.user.username;
   const isUserInGroup = await CheckGroup(username, groupname);
-  console.log("isUserInGroup result", isUserInGroup);
   if (isUserInGroup) {
     return res.status(200).send({
       success: true,

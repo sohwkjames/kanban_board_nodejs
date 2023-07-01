@@ -65,6 +65,13 @@ async function create(req, res, next) {
 
 async function getCurrentUserDetails(req, res, next) {
   // isAuthenticatedUser middleware must fire before this
+  if (!req.user.isActive) {
+    return res.send({
+      success: false,
+      message: "User status is not active",
+    });
+  }
+
   let sanitizedUserObj;
   if (req.user) {
     sanitizedUserObj = {
@@ -90,18 +97,34 @@ async function allUsers(req, res, next) {
 
   const resolved = await Promise.all(promiseArr);
 
-  console.log("resolved is", resolved);
-
   res.send({ success: true, data: resolved });
 }
 
 async function update(req, res, next) {
   // Middleware attaches the admin user object to this request.
   // User to update is in request body.
+
   const { username, password, email, isActive, userGroups } = req.body;
 
-  // Check if password pass constraints if request did send a password
+  if (!req.user.isActive) {
+    return res.send({
+      success: false,
+      message: "User status is not active",
+    });
+  }
+
+  // Check for mega-admin edge case
+  if (username === "admin") {
+    if (!userGroups.includes("admin")) {
+      return res.send({
+        success: false,
+        message: "Admin role cannot be removed from the Admin user",
+      });
+    }
+  }
+
   if (password && !isValidPassword(password)) {
+    // Check if password pass constraints if request did send a password
     return res.send({
       success: false,
       message:
@@ -160,7 +183,7 @@ async function deleteAllUserGroupsFromUser(username) {
   });
 }
 
-async function updateHelper(username, password, email, isActive, userGroup) {
+async function updateHelper(username, password, email, isActive) {
   if (password) {
     const hashedPassword = await bcrypt.hash(password, saltRounds);
 
@@ -213,7 +236,6 @@ async function allUsersHelper() {
   return new Promise((resolve, reject) => {
     connection.query(sql, [], function (err, results, fields) {
       if (err) reject(err);
-      console.log("Results", results);
       resolve(results);
     });
   });
