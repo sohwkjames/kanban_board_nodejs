@@ -43,24 +43,61 @@ async function getAll(req, res, next) {
 
 async function addHelper(groupName) {
   // Check if usergroup already exists
-  const grpsql = "SELECT * FROM usergroups WHERE groupname= (?)";
-  connection.query(grpsql, [groupName], (err, result, fields) => {
-    if (err) {
-      reject(err);
-    } else {
-      if (result.length) {
-        resolve({ success: false, message: "Usergroup already exists" });
-      }
 
+  return new Promise((resolve, reject) => {
+    const grpsql = "SELECT * FROM usergroups WHERE groupname= (?)";
+    connection.query(grpsql, [groupName], (err, result, fields) => {
+      if (err) {
+        reject(err);
+      }
+      if (result.length) {
+        reject("Group name already exists");
+        return;
+      }
       const sql = "INSERT INTO usergroups (groupname) VALUES (?)";
-      return new Promise((resolve, reject) => {
-        connection.query(sql, [groupName], (err, result, fields) => {
-          if (err) reject(err);
-          resolve(result);
-        });
+      connection.query(sql, [groupName], (err, result, fields) => {
+        if (err) reject(err);
+        resolve(result);
       });
-    }
+    });
+
+    // const grpsql = "SELECT * FROM usergroups WHERE groupname= (?)";
+    // connection.query(grpsql, [groupName], (err, result, fields) => {
+    //   if (err) {
+    //     reject(err);
+    //   } else {
+    //     if (result.length) {
+    //       resolve({ success: false, message: "Usergroup already exists" });
+    //     }
+
+    //     const sql = "INSERT INTO usergroups (groupname) VALUES (?)";
+    //     return new Promise((resolve, reject) => {
+    //       connection.query(sql, [groupName], (err, result, fields) => {
+    //         if (err) reject(err);
+    //         resolve(result);
+    //       });
+    //     });
+    //   }
   });
+
+  // const grpsql = "SELECT * FROM usergroups WHERE groupname= (?)";
+  // connection.query(grpsql, [groupName], (err, result, fields) => {
+  //   if (err) {
+  //     reject(err);
+  //   } else {
+  //     if (result.length) {
+  //       resolve({ success: false, message: "Usergroup already exists" });
+  //     }
+
+  //     const sql = "INSERT INTO usergroups (groupname) VALUES (?)";
+  //     return new Promise((resolve, reject) => {
+  //       connection.query(sql, [groupName], (err, result, fields) => {
+  //         if (err) reject(err);
+  //         resolve(result);
+  //       });
+  //     });
+  //   }
+  // });
 }
 
 async function add(req, res, next) {
@@ -77,7 +114,7 @@ async function add(req, res, next) {
   } catch (err) {
     return res.send({
       success: false,
-      message: err.message,
+      message: err,
     });
   }
 }

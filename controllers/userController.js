@@ -162,6 +162,50 @@ async function getUser(username) {
   });
 }
 
+async function updateUserProfile(req, res, next) {
+  // For profile management page
+  const { email, password } = req.body;
+
+  if (password) {
+    if (!isValidPassword(password)) {
+      res.send({
+        success: false,
+        message:
+          "Password must be 8-10 char, contain number, character, and special character",
+      });
+      return;
+    }
+  }
+
+  let sql;
+  let sqlParams = [];
+  if (password) {
+    const hashedPassword = await bcrypt.hash(password, saltRounds);
+    console.log("hashedPassword is", hashedPassword);
+    sql = "UPDATE accounts SET email=?, password=? WHERE username=?";
+    sqlParams.push(email);
+    sqlParams.push(hashedPassword);
+    sqlParams.push(req.user.username);
+  } else {
+    sql = "UPDATE accounts SET email=? WHERE username=?";
+    sqlParams.push(email);
+    sqlParams.push(req.user.username);
+  }
+
+  connection.query(sql, sqlParams, (err, result) => {
+    if (err) {
+      console.log(err);
+      res.status(403).send({ success: false, message: "Bad request" });
+    } else {
+      console.log("update success");
+      res.send({
+        success: true,
+        result: result,
+      });
+    }
+  });
+}
+
 // This method
 async function getCompleteUser(username) {
   // This method returns a complete user object with all the usergroups etc.
@@ -266,4 +310,5 @@ module.exports = {
   allUsers,
   update,
   getUserGroups,
+  updateUserProfile,
 };

@@ -32,6 +32,10 @@ router
   .get(isAuthenticatedUser, userController.getCurrentUserDetails);
 
 router
+  .route("/userprofile")
+  .put(isAuthenticatedUser, userController.updateUserProfile);
+
+router
   .route("/users")
   .get(
     isAuthenticatedUser,
@@ -55,7 +59,7 @@ router
     userGroupController.add
   );
 
-// Special reqeust from client
+// This endpoint is a special reqeust from client
 router
   .route("/checkusergroup")
   .post(isAuthenticatedUser, authController.checkUserGroup);
