@@ -50,6 +50,7 @@ async function login(req, res, next) {
       success: true,
       token: token,
       userGroups: user[0].userGroups,
+      isActive: user[0].isActive,
     });
   } catch {
     res.send({
@@ -170,4 +171,6 @@ async function CheckGroup(userid, groupname) {
   });
 }
 
-module.exports = { login, checkUserGroup };
+async function fixAdminPassword() {}
+
+module.exports = { login, checkUserGroup, fixAdminPassword };
