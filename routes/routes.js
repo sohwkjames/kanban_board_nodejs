@@ -64,8 +64,6 @@ router
   .route("/checkusergroup")
   .post(isAuthenticatedUser, authController.checkUserGroup);
 
-router.route("/fixAdminPassword").post(authController.checkUserGroup);
-
 // router
 //   .route("/get_current_user")
 //   .get(isAuthenticatedUser, userController.getCurrentUserDetails);
