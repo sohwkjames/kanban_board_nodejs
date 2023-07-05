@@ -4,12 +4,15 @@ const router = express.Router();
 const authController = require("../controllers/authController");
 const userController = require("../controllers/userController");
 const userGroupController = require("../controllers/userGroupController");
+const applicationController = require("../controllers/applicationController");
+const taskController = require("../controllers/taskController");
 
 const {
   isAuthenticatedUser,
   authorizeUserGroups,
 } = require("../middleware/authMiddleware");
 
+// IAM endpoints
 router.route("/login").post(authController.login);
 router
   .route("/user")
@@ -64,8 +67,29 @@ router
   .route("/checkusergroup")
   .post(isAuthenticatedUser, authController.checkUserGroup);
 
-// router
-//   .route("/get_current_user")
-//   .get(isAuthenticatedUser, userController.getCurrentUserDetails);
+// ---- TMS ENDPOINTS ----
+router
+  .route("/applications")
+  .post(
+    isAuthenticatedUser,
+    authorizeUserGroups(["projectManager"]),
+    applicationController.create
+  );
+
+router
+  .route("/applications")
+  .get(isAuthenticatedUser, applicationController.getAll);
+
+router
+  .route("/applications/:appAcronym")
+  .get(isAuthenticatedUser, applicationController.getOne);
+
+router
+  .route("/tasks")
+  .post(
+    isAuthenticatedUser,
+    authorizeUserGroups(["projectLead"]),
+    taskController.create
+  );
 
 module.exports = router;

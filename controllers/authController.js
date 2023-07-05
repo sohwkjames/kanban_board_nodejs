@@ -5,13 +5,15 @@ const mysql = require("mysql");
 const { USER_GROUPS } = require("../utils/userGroups");
 const { isValidPassword } = require("../utils/auth");
 const { getCompleteUser } = require("./userController");
-const config = {
-  host: "localhost",
-  user: "root",
-  password: process.env.LOCAL_DB_PASSWORD,
-  database: process.env.LOCAL_DB_DATABASE,
-  multipleStatements: true,
-};
+const { config } = require("../utils/dbConfig");
+
+// const config = {
+//   host: "localhost",
+//   user: "root",
+//   password: process.env.LOCAL_DB_PASSWORD,
+//   database: process.env.LOCAL_DB_DATABASE,
+//   multipleStatements: true,
+// };
 
 connection = mysql.createConnection(config);
 
@@ -138,8 +140,11 @@ async function registerHelper(
 }
 
 async function checkUserGroup(req, res, next) {
+  console.log("Firing checkUserGroup");
   const { groupname } = req.body;
   const username = req.user.username;
+  console.log("Groupname", groupname);
+
   const isUserInGroup = await CheckGroup(username, groupname);
   if (isUserInGroup) {
     return res.status(200).send({
@@ -162,6 +167,7 @@ async function CheckGroup(userid, groupname) {
       if (err) {
         reject(false);
       }
+      console.log("james2", result);
       if (result.length) {
         resolve(true);
       } else {

@@ -15,8 +15,8 @@ async function isAuthenticatedUser(req, res, next) {
     // console.log("token true branch");
     token = req.headers.authorization.split(" ")[2];
   }
-
-  // console.log("token is", token);
+  // console.log("req.heads.authorization", req.heads.authorization);
+  console.log("token is", token);
 
   if (!token) {
     return res.send({
@@ -53,6 +53,9 @@ function authorizeUserGroups(allowedGroups) {
     const user = req.user;
 
     let isAuthorized = false;
+
+    console.log("user.userGroups", user.userGroups);
+    console.log("allowedGroups", allowedGroups);
 
     user.userGroups.forEach((group) => {
       if (allowedGroups.includes(group)) {

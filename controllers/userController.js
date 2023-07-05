@@ -5,13 +5,14 @@ const mysql = require("mysql");
 const { USER_GROUPS } = require("../utils/userGroups");
 const { isValidPassword } = require("../utils/auth");
 const { addUserGroupsToUser } = require("./userGroupController");
+const { config } = require("../utils/dbConfig");
 
-const config = {
-  host: "localhost",
-  user: "root",
-  password: process.env.LOCAL_DB_PASSWORD,
-  database: process.env.LOCAL_DB_DATABASE,
-};
+// const config = {
+//   host: "localhost",
+//   user: "root",
+//   password: process.env.LOCAL_DB_PASSWORD,
+//   database: process.env.LOCAL_DB_DATABASE,
+// };
 
 connection = mysql.createConnection(config);
 

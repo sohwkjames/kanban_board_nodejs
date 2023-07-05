@@ -3,13 +3,14 @@ const { sendToken } = require("../utils/jwtToken");
 const bcrypt = require("bcryptjs");
 const mysql = require("mysql");
 const { isValidPassword } = require("../utils/auth");
+const { config } = require("../utils/dbConfig");
 
-const config = {
-  host: "localhost",
-  user: "root",
-  password: process.env.LOCAL_DB_PASSWORD,
-  database: process.env.LOCAL_DB_DATABASE,
-};
+// const config = {
+//   host: "localhost",
+//   user: "root",
+//   password: process.env.LOCAL_DB_PASSWORD,
+//   database: process.env.LOCAL_DB_DATABASE,
+// };
 
 connection = mysql.createConnection(config);
 
