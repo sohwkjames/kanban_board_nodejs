@@ -15,14 +15,14 @@ connection = mysql.createConnection(config);
 async function create(req, res, next) {
   const {
     appAcronym,
-    // appRnumber,
-    // appDescription,
+    appRnumber,
+    appDescription,
     appStartdate,
     appEnddate,
-    // appPermitOpen,
-    // appPermitTodolist,
-    // appPermitDoing,
-    // appPermitDone,
+    appPermitOpen,
+    appPermitTodolist,
+    appPermitDoing,
+    appPermitDone,
   } = req.body;
 
   if (!appAcronym || !appRnumber || !appStartdate || !appEnddate) {
@@ -40,8 +40,24 @@ async function create(req, res, next) {
     });
   }
 
-  const sql = `INSERT INTO application 
-    (App_Acronym, App_rnumber, App_description, App_startdate, App_enddate, App_permit_open, App_permit_todolist, App_permit_doing, App_permit_done) 
+  const appNameExists = await new Promise((resolve, reject) => {
+    const sql =
+      "SELECT COUNT(App_Acronym) AS count FROM application WHERE App_Acronym = ?";
+    connection.query(sql, appAcronym, (err, result) => {
+      console.log("Result", result);
+      resolve(result[0].count);
+    });
+  });
+  console.log("appNameExist", appNameExists);
+  if (appNameExists) {
+    return res.send({
+      sucess: false,
+      message: "App acronym already exists, please choose a different one",
+    });
+  }
+
+  const sql = `INSERT INTO application
+    (App_Acronym, App_rnumber, App_description, App_startdate, App_enddate, App_permit_open, App_permit_todolist, App_permit_doing, App_permit_done)
     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`;
 
   connection.query(
