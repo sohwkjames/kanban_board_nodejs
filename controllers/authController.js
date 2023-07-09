@@ -24,7 +24,6 @@ async function login(req, res, next) {
 
   try {
     const user = await getCompleteUser(username);
-    console.log("is authenticatedUser middleware, user is", user);
 
     const isValidCredentials = await bcrypt.compare(password, user[0].password);
 
@@ -140,10 +139,8 @@ async function registerHelper(
 }
 
 async function checkUserGroup(req, res, next) {
-  console.log("Firing checkUserGroup");
   const { groupname } = req.body;
   const username = req.user.username;
-  console.log("Groupname", groupname);
 
   const isUserInGroup = await CheckGroup(username, groupname);
   if (isUserInGroup) {
@@ -167,7 +164,6 @@ async function CheckGroup(userid, groupname) {
       if (err) {
         reject(false);
       }
-      console.log("james2", result);
       if (result.length) {
         resolve(true);
       } else {
@@ -177,6 +173,23 @@ async function CheckGroup(userid, groupname) {
   });
 }
 
-async function fixAdminPassword() {}
+// Returns true or false
+async function checkUserCanPerformAction(appAcronym, username, actionName) {
+  // Get the appname permissions
+  const app = await new Promise((resolve, reject) => {
+    const sql = "SELECT * FROM application WHERE App_acronym = ?";
+    connection.query(sql, [appAcronym], (err, result) => {
+      resolve(result[0]);
+    });
+  });
 
-module.exports = { login, checkUserGroup, fixAdminPassword };
+  const permittedGroup = app[actionName];
+  const result = await CheckGroup(username, permittedGroup);
+
+  return result;
+  // Get username's usergroups
+
+  // Check if action to perform eg 'App_permit_create' is in appname permissions group
+}
+
+module.exports = { login, checkUserGroup, checkUserCanPerformAction };

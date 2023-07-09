@@ -22,7 +22,9 @@ async function getAllHelper() {
   return new Promise((resolve, reject) => {
     connection.query(sql, [], (err, result, fields) => {
       if (err) reject(err);
-      resolve(result);
+      const tmpArr = result.map((record) => record.groupname);
+      // console.log("tmparr", tmpArr);
+      resolve(tmpArr);
     });
   });
 }

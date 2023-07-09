@@ -182,7 +182,6 @@ async function updateUserProfile(req, res, next) {
   let sqlParams = [];
   if (password) {
     const hashedPassword = await bcrypt.hash(password, saltRounds);
-    console.log("hashedPassword is", hashedPassword);
     sql = "UPDATE accounts SET email=?, password=? WHERE username=?";
     sqlParams.push(email);
     sqlParams.push(hashedPassword);
@@ -195,10 +194,8 @@ async function updateUserProfile(req, res, next) {
 
   connection.query(sql, sqlParams, (err, result) => {
     if (err) {
-      console.log(err);
       res.status(403).send({ success: false, message: "Bad request" });
     } else {
-      console.log("update success");
       res.send({
         success: true,
         result: result,

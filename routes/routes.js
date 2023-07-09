@@ -6,6 +6,7 @@ const userController = require("../controllers/userController");
 const userGroupController = require("../controllers/userGroupController");
 const applicationController = require("../controllers/applicationController");
 const taskController = require("../controllers/taskController");
+const planController = require("../controllers/planController");
 
 const {
   isAuthenticatedUser,
@@ -50,7 +51,12 @@ router
   .route("/usergroups")
   .get(
     isAuthenticatedUser,
-    authorizeUserGroups(["admin"]),
+    authorizeUserGroups([
+      "admin",
+      "projectLead",
+      "projectManager",
+      "developer",
+    ]),
     userGroupController.getAll
   );
 
@@ -72,7 +78,7 @@ router
   .route("/applications")
   .post(
     isAuthenticatedUser,
-    authorizeUserGroups(["projectManager"]),
+    authorizeUserGroups(["projectLead"]),
     applicationController.create
   );
 
@@ -85,11 +91,16 @@ router
   .get(isAuthenticatedUser, applicationController.getOne);
 
 router
-  .route("/tasks")
+  .route("/plans")
   .post(
     isAuthenticatedUser,
-    authorizeUserGroups(["projectLead"]),
-    taskController.create
+    authorizeUserGroups(["projectManager"]),
+    planController.create
   );
+
+router.route("/plans").get(isAuthenticatedUser, planController.getAll);
+router.route("/plan").get(isAuthenticatedUser, planController.getByAppAcronym);
+
+router.route("/tasks").post(isAuthenticatedUser, taskController.create);
 
 module.exports = router;

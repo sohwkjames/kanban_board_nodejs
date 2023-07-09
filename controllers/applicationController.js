@@ -23,6 +23,7 @@ async function create(req, res, next) {
     appPermitTodolist,
     appPermitDoing,
     appPermitDone,
+    appPermitCreate,
   } = req.body;
 
   if (!appAcronym || !appRnumber || !appStartdate || !appEnddate) {
@@ -44,11 +45,9 @@ async function create(req, res, next) {
     const sql =
       "SELECT COUNT(App_Acronym) AS count FROM application WHERE App_Acronym = ?";
     connection.query(sql, appAcronym, (err, result) => {
-      console.log("Result", result);
       resolve(result[0].count);
     });
   });
-  console.log("appNameExist", appNameExists);
   if (appNameExists) {
     return res.send({
       sucess: false,
@@ -57,8 +56,8 @@ async function create(req, res, next) {
   }
 
   const sql = `INSERT INTO application
-    (App_Acronym, App_rnumber, App_description, App_startdate, App_enddate, App_permit_open, App_permit_todolist, App_permit_doing, App_permit_done)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+    (App_Acronym, App_rnumber, App_description, App_startdate, App_enddate, App_permit_open, App_permit_todolist, App_permit_doing, App_permit_done, App_permit_create)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
 
   connection.query(
     sql,
@@ -72,10 +71,11 @@ async function create(req, res, next) {
       appPermitTodolist,
       appPermitDoing,
       appPermitDone,
+      appPermitCreate,
     ],
     (err, result) => {
+      console.log("err", err);
       if (err) {
-        console.log("err", err);
         return res.send({
           success: false,
           message: "Failed to add application",
@@ -161,4 +161,24 @@ async function incrementRNumber(appAcronym) {
   });
 }
 
-module.exports = { create, getAll, getOne, getRNumber, incrementRNumber };
+// Utility functions
+async function getAppByName(appName) {
+  const sql = "SELECT * FROM applications WHERE App_Acronym = ? ";
+  return new Promise((resolve, reject) => {
+    connection.query(sql, [appname], (err, result) => {
+      if (err) reject(err);
+      if (result) {
+        resolve(result);
+      }
+    });
+  });
+}
+
+module.exports = {
+  create,
+  getAll,
+  getOne,
+  getRNumber,
+  incrementRNumber,
+  getAppByName,
+};
