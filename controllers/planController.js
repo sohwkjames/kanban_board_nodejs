@@ -86,7 +86,9 @@ async function getAll(req, res, next) {
 }
 
 async function getByAppAcronym(req, res, next) {
-  const { appAcronym } = req.body;
+  const appAcronym = req.params.appAcronym;
+  // console.log("appAcronym", appAcronym);
+
   try {
     const sql = "SELECT * FROM PLAN WHERE Plan_app_acronym = ?";
     const results = await new Promise((resolve, reject) => {

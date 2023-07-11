@@ -11,6 +11,7 @@ const planController = require("../controllers/planController");
 const {
   isAuthenticatedUser,
   authorizeUserGroups,
+  authorizeAction,
 } = require("../middleware/authMiddleware");
 
 // IAM endpoints
@@ -68,6 +69,10 @@ router
     userGroupController.add
   );
 
+router
+  .route("/check-permission")
+  .post(isAuthenticatedUser, authController.checkUserCanPerformActionEndpoint);
+
 // This endpoint is a special reqeust from client
 router
   .route("/checkusergroup")
@@ -91,16 +96,31 @@ router
   .get(isAuthenticatedUser, applicationController.getOne);
 
 router
-  .route("/plans")
-  .post(
-    isAuthenticatedUser,
-    authorizeUserGroups(["projectManager"]),
-    planController.create
-  );
+  .route("/applications/earliest-end-date")
+  .post(isAuthenticatedUser, applicationController.getEarliestEndDate);
+
+router
+  .route("/applications/latest-end-date")
+  .post(isAuthenticatedUser, applicationController.getLatestEndDate);
+
+router.route("/plans").post(
+  isAuthenticatedUser,
+  authorizeAction("App_permit_open"),
+  // authorizeUserGroups(["projectManager"]),
+  planController.create
+);
 
 router.route("/plans").get(isAuthenticatedUser, planController.getAll);
-router.route("/plan").get(isAuthenticatedUser, planController.getByAppAcronym);
+router
+  .route("/plans/:appAcronym")
+  .get(isAuthenticatedUser, planController.getByAppAcronym);
 
-router.route("/tasks").post(isAuthenticatedUser, taskController.create);
+router
+  .route("/tasks")
+  .post(
+    isAuthenticatedUser,
+    authorizeAction("App_permit_create"),
+    taskController.create
+  );
 
 module.exports = router;

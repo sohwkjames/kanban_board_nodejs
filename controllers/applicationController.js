@@ -19,13 +19,13 @@ async function create(req, res, next) {
     appDescription,
     appStartdate,
     appEnddate,
+    appPermitCreate,
     appPermitOpen,
     appPermitTodolist,
     appPermitDoing,
     appPermitDone,
-    appPermitCreate,
   } = req.body;
-
+  console.log("in app.create");
   if (!appAcronym || !appRnumber || !appStartdate || !appEnddate) {
     return res.send({
       success: false,
@@ -123,6 +123,68 @@ async function getOne(req, res, next) {
   });
 }
 
+async function getEarliestEndDate(req, res, next) {
+  const { appAcronym } = req.body;
+  let success = false;
+  const sql =
+    "SELECT Plan_enddate FROM plan WHERE Plan_app_acronym = ? AND Plan_enddate >= CURDATE() ORDER BY Plan_enddate ASC";
+  const result = await new Promise((resolve, reject) => {
+    connection.query(sql, [appAcronym], (err, result) => {
+      if (err) {
+        reject(err);
+      }
+      if (result.length) {
+        success = true;
+        resolve(result[0].Plan_enddate);
+      }
+      if (!result.length) {
+        resolve(false);
+      }
+    });
+  });
+  if (result) {
+    res.send({
+      success: true,
+      data: result,
+    });
+  } else {
+    res.send({
+      success: false,
+    });
+  }
+}
+
+async function getLatestEndDate(req, res, next) {
+  const { appAcronym } = req.body;
+  let success = false;
+  const sql =
+    "SELECT Plan_enddate FROM plan WHERE Plan_app_acronym = ? AND Plan_enddate >= CURDATE() ORDER BY Plan_enddate DESC";
+  const result = await new Promise((resolve, reject) => {
+    connection.query(sql, [appAcronym], (err, result) => {
+      if (err) {
+        reject(err);
+      }
+      if (result.length) {
+        success = true;
+        resolve(result[0].Plan_enddate);
+      }
+      if (!result.length) {
+        resolve(false);
+      }
+    });
+  });
+  if (result) {
+    res.send({
+      success: true,
+      data: result,
+    });
+  } else {
+    res.send({
+      success: false,
+    });
+  }
+}
+
 // --- Helper functions ---
 async function getRNumber(appAcronym) {
   const sql = "SELECT App_rnumber FROM application WHERE App_Acronym = ?";
@@ -179,6 +241,8 @@ module.exports = {
   getAll,
   getOne,
   getRNumber,
+  getEarliestEndDate,
   incrementRNumber,
   getAppByName,
+  getLatestEndDate,
 };

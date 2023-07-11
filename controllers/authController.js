@@ -173,6 +173,18 @@ async function CheckGroup(userid, groupname) {
   });
 }
 
+async function checkUserCanPerformActionEndpoint(req, res, next) {
+  const { appAcronym, actionName } = req.body;
+  const username = req.user.username;
+
+  const result = await checkUserCanPerformAction(
+    appAcronym,
+    username,
+    actionName
+  );
+  res.send({ success: result });
+}
+
 // Returns true or false
 async function checkUserCanPerformAction(appAcronym, username, actionName) {
   // Get the appname permissions
@@ -185,11 +197,17 @@ async function checkUserCanPerformAction(appAcronym, username, actionName) {
 
   const permittedGroup = app[actionName];
   const result = await CheckGroup(username, permittedGroup);
-
+  console.log("result", result);
   return result;
   // Get username's usergroups
 
   // Check if action to perform eg 'App_permit_create' is in appname permissions group
 }
 
-module.exports = { login, checkUserGroup, checkUserCanPerformAction };
+module.exports = {
+  login,
+  checkUserGroup,
+  checkUserCanPerformAction,
+  checkUserCanPerformActionEndpoint,
+  CheckGroup,
+};

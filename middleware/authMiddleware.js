@@ -3,6 +3,7 @@ const {
   getCompleteUser,
   getUserGroups,
 } = require("../controllers/userController");
+const { CheckGroup } = require("../controllers/authController");
 
 async function isAuthenticatedUser(req, res, next) {
   // this method checks request header to see if valid jwt is present
@@ -75,4 +76,31 @@ function authorizeUserGroups(allowedGroups) {
   };
 }
 
-module.exports = { isAuthenticatedUser, authorizeUserGroups };
+function authorizeAction(taskState) {
+  // Checks if current user can perform action on taskState
+  // taskState points to the DB col eg "App_permit_create"
+  // req.user and req.body.appAcronym must be available
+
+  return async (req, res, next) => {
+    const user = req.user;
+    const { appAcronym } = req.body;
+    console.log("appACronym", appAcronym);
+
+    const app = await new Promise((resolve, reject) => {
+      const sql = "SELECT * FROM application WHERE App_acronym = ?";
+      connection.query(sql, [appAcronym], (err, result) => {
+        resolve(result[0]);
+      });
+    });
+
+    console.log("app", app);
+    console.log("taskState", taskState);
+
+    const permittedGroup = app[taskState];
+    const result = await CheckGroup(user.username, permittedGroup);
+    console.log("authorizeAction result", result);
+    next();
+  };
+}
+
+module.exports = { isAuthenticatedUser, authorizeUserGroups, authorizeAction };
