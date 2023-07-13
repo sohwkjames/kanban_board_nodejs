@@ -5,7 +5,7 @@ const { config } = require("../utils/dbConfig");
 const { getRNumber, incrementRNumber } = require("./applicationController");
 const { checkUserCanPerformAction } = require("./authController");
 const { TASK_STATES, TASK_RANKS } = require("../constants/taskState");
-const { createNoteString } = require("../utils/notes");
+const { createNoteString, noteStringToArr } = require("../utils/notes");
 const dayjs = require("dayjs");
 const { DATETIME_FORMAT } = require("../constants/timeFormat");
 
@@ -133,10 +133,18 @@ async function getTaskByApp(req, res, next) {
     });
   });
 
+  // console.log("result is", result);
+
+  const formattedResults = result.map((record) => {
+    let notes = noteStringToArr(record.Task_notes);
+    const newObj = { ...record, Task_notes: notes };
+    return newObj;
+  });
+
   if (result) {
     res.send({
       success: true,
-      data: result,
+      data: formattedResults,
     });
   }
 }
@@ -157,9 +165,15 @@ async function getTask(req, res, next) {
   });
 
   if (result) {
+    const formattedResults = result.map((record) => {
+      let notes = noteStringToArr(record.Task_notes);
+      const newObj = { ...record, Task_notes: notes };
+      return newObj;
+    });
+
     res.send({
       success: true,
-      data: result,
+      data: formattedResults,
     });
   }
 }

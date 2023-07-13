@@ -17,4 +17,23 @@ function createNoteString(username, taskState, noteContent, timeStamp) {
   return noteString;
 }
 
-module.exports = { createNoteString };
+function noteStringToObj(str) {
+  const tmpArr = str.split("**");
+  return {
+    username: tmpArr[0],
+    taskState: tmpArr[1],
+    note: tmpArr[2],
+    timestamp: tmpArr[3],
+  };
+}
+
+function noteStringToArr(note) {
+  if (!note) return;
+  let noteArr = note.split("||");
+  noteArr.pop();
+  const resultArr = noteArr.map((n) => noteStringToObj(n));
+  console.log("noteStringToArr, resultArr", resultArr);
+  return resultArr;
+}
+
+module.exports = { createNoteString, noteStringToArr };
