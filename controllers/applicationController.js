@@ -25,7 +25,6 @@ async function create(req, res, next) {
     appPermitDoing,
     appPermitDone,
   } = req.body;
-  console.log("in app.create");
   if (!appAcronym || !appRnumber || !appStartdate || !appEnddate) {
     return res.send({
       success: false,

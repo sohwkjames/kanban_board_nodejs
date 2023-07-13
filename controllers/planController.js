@@ -1,6 +1,7 @@
 const mysql = require("mysql");
 const { config } = require("../utils/dbConfig");
-
+const dayjs = require("dayjs");
+const { DATETIME_FORMAT, DATE_FORMAT } = require("../constants/timeFormat");
 const connection = mysql.createConnection(config);
 
 async function create(req, res, next) {
@@ -33,7 +34,6 @@ async function create(req, res, next) {
     const sql = "SELECT * FROM application WHERE App_Acronym = ?";
     connection.query(sql, [appAcronym], (err, result) => {
       if (err) reject(err);
-      console.log("james", result);
       if (result.length) {
         resolve(true);
       } else {
@@ -82,6 +82,8 @@ async function getAll(req, res, next) {
     });
   });
 
+  console.log("getAll plans", result);
+
   res.send({ success: true, data: plans });
 }
 
@@ -97,7 +99,18 @@ async function getByAppAcronym(req, res, next) {
       });
     });
 
-    res.send({ success: true, data: results });
+    console.log("getPlan by app", results);
+    const formattedResults = results.map((record) => {
+      return {
+        ...record,
+        Plan_startdate: dayjs(record.Plan_startdate).format(DATE_FORMAT),
+        Plan_enddate: dayjs(record.Plan_enddate).format(DATE_FORMAT),
+      };
+    });
+
+    console.log("formattedResults", formattedResults);
+
+    res.send({ success: true, data: formattedResults });
   } catch (e) {
     res.send({ success: false, message: "Failed to get plans" });
   }

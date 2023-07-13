@@ -32,7 +32,6 @@ function noteStringToArr(note) {
   let noteArr = note.split("||");
   noteArr.pop();
   const resultArr = noteArr.map((n) => noteStringToObj(n));
-  console.log("noteStringToArr, resultArr", resultArr);
   return resultArr;
 }
 

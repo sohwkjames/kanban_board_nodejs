@@ -33,7 +33,6 @@ async function create(req, res, next) {
       let sql = "SELECT App_rnumber FROM application WHERE App_Acronym = ?";
       connection.query(sql, [appAcronym], (err, result) => {
         if (err) reject(err);
-        console.log("app rnumber", result);
         resolve(result[0].App_rnumber);
       });
     });
@@ -133,8 +132,6 @@ async function getTaskByApp(req, res, next) {
     });
   });
 
-  // console.log("result is", result);
-
   const formattedResults = result.map((record) => {
     let notes = noteStringToArr(record.Task_notes);
     const newObj = { ...record, Task_notes: notes };
@@ -151,14 +148,12 @@ async function getTaskByApp(req, res, next) {
 
 async function getTask(req, res, next) {
   const taskId = req.params.taskId;
-  console.log("taskId", taskId);
 
   const sql = "SELECT * FROM task WHERE Task_id = ?";
   const result = await new Promise((resolve, reject) => {
     connection.query(sql, [taskId], (err, result) => {
       if (err) reject(err);
       else {
-        console.log("Result", result);
         resolve(result);
       }
     });
@@ -197,13 +192,16 @@ async function editTask(req, res, next) {
 
   const taskState = taskObj.Task_state;
   // System generated note string
+  let taskNoteString = createNoteString(
+    "System",
+    taskState,
+    `${req.user.username} has taken ownership of the task`
+  );
 
   // User generated note string
-  const taskNoteString = createNoteString(
-    req.user.username,
-    taskState,
-    taskNote
-  );
+  if (taskNote) {
+    taskNoteString += createNoteString(req.user.username, taskState, taskNote);
+  }
   // Update task owner, concat task note string
 
   const sql =
@@ -222,7 +220,6 @@ async function editTask(req, res, next) {
       (err, result) => {
         if (err) reject(err);
         if (result) {
-          console.log("result", result);
           resolve(result);
         }
       }
@@ -287,7 +284,6 @@ async function editAndPromoteTask(req, res, next) {
       (err, result) => {
         if (err) reject(err);
         if (result) {
-          console.log("result", result);
           resolve(result);
         }
       }
@@ -352,7 +348,6 @@ async function editAndDemoteTask(req, res, next) {
       (err, result) => {
         if (err) reject(err);
         if (result) {
-          console.log("result", result);
           resolve(result);
         }
       }

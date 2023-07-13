@@ -5,7 +5,6 @@ const connection = mysql.createConnection(config);
 
 async function addNotes(req, res, next) {
   const { note } = req.body;
-  console.log("notes", note);
 
   if (!note) {
     return res.send({
@@ -21,7 +20,6 @@ async function addNotes(req, res, next) {
     note.comment
   );
 
-  console.log("resolved", resolved);
   if (resolved) {
     res.send({
       success: true,

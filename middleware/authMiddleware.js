@@ -84,7 +84,6 @@ function authorizeAction(taskState) {
   return async (req, res, next) => {
     const user = req.user;
     const { appAcronym } = req.body;
-    console.log("appACronym", appAcronym);
 
     const app = await new Promise((resolve, reject) => {
       const sql = "SELECT * FROM application WHERE App_acronym = ?";
@@ -93,12 +92,8 @@ function authorizeAction(taskState) {
       });
     });
 
-    console.log("app", app);
-    console.log("taskState", taskState);
-
     const permittedGroup = app[taskState];
     const result = await CheckGroup(user.username, permittedGroup);
-    console.log("authorizeAction result", result);
     next();
   };
 }
