@@ -12,7 +12,8 @@ const { DATETIME_FORMAT } = require("../constants/timeFormat");
 connection = mysql.createConnection(config);
 
 async function create(req, res, next) {
-  const { taskName, taskDescription, taskPlan, appAcronym } = req.body;
+  const { taskName, taskDescription, taskPlan, appAcronym, taskNote } =
+    req.body;
 
   // const isValidPermissions = await checkUserCanPerformAction(
   //   appAcronym,
@@ -46,11 +47,19 @@ async function create(req, res, next) {
     // generate task owner
     const taskOwner = req.user.username;
 
-    const taskNoteString = createNoteString(
-      taskOwner,
+    const taskCreateDate = dayjs().format(DATETIME_FORMAT);
+
+    // system generated task note
+    let taskNoteString = createNoteString(
+      "System",
       "open",
-      "User has created the task"
+      `${taskOwner} has created the task.`
     );
+
+    // user generated note string
+    if (taskNote) {
+      taskNoteString += createNoteString(taskOwner, "open", taskNote);
+    }
 
     const createdTask = await new Promise((resolve, reject) => {
       const sql = `INSERT INTO task
@@ -173,8 +182,14 @@ async function editTask(req, res, next) {
   });
 
   const taskState = taskObj.Task_state;
-  // Create task note string
-  const taskNoteString = createNoteString(username, taskState, taskNote);
+  // System generated note string
+
+  // User generated note string
+  const taskNoteString = createNoteString(
+    req.user.username,
+    taskState,
+    taskNote
+  );
   // Update task owner, concat task note string
 
   const sql =
@@ -207,7 +222,7 @@ async function editTask(req, res, next) {
 }
 
 async function editAndPromoteTask(req, res, next) {
-  const { taskId, taskName, taskDescription, taskPlan } = req.body;
+  const { taskId, taskName, taskDescription, taskPlan, taskNote } = req.body;
   const taskObj = await new Promise((resolve, reject) => {
     const sql = "SELECT * FROM task WHERE Task_id=?";
     connection.query(sql, [taskId], (err, result) => {
@@ -218,25 +233,43 @@ async function editAndPromoteTask(req, res, next) {
     });
   });
 
-  console.log("taskObj", taskObj);
-
   const newTaskState = TASK_RANKS[taskObj.Task_state].promoted;
 
+  // System generated note string
+  let taskNoteString = createNoteString(
+    "System",
+    newTaskState,
+    `${req.user.username} has promoted the task to ${newTaskState}`
+  );
+
+  // User generated note string
+  if (taskNote) {
+    taskNoteString += createNoteString(
+      req.user.username,
+      newTaskState,
+      taskNote
+    );
+  }
   if (!newTaskState) {
     res.send({
       success: false,
       message: "Unable to promote this task further.",
     });
   }
-  console.log("newTaskState", newTaskState);
-  // ("UPDATE task SET Task_name=?, Task_description=?, Task_plan=? WHERE Task_id=?");
 
   const sql =
-    "UPDATE task SET Task_name=?, Task_description=?, Task_plan=?, Task_state=? WHERE Task_id=?";
+    "UPDATE task SET Task_name=?, Task_description=?, Task_plan=?, Task_state=?, Task_notes=CONCAT(Task_notes,?) WHERE Task_id=?";
   const result = await new Promise((resolve, reject) => {
     connection.query(
       sql,
-      [taskName, taskDescription, taskPlan, newTaskState, taskId],
+      [
+        taskName,
+        taskDescription,
+        taskPlan,
+        newTaskState,
+        taskNoteString,
+        taskId,
+      ],
       (err, result) => {
         if (err) reject(err);
         if (result) {
@@ -254,7 +287,7 @@ async function editAndPromoteTask(req, res, next) {
 }
 
 async function editAndDemoteTask(req, res, next) {
-  const { taskId, taskName, taskDescription, taskPlan } = req.body;
+  const { taskId, taskName, taskDescription, taskPlan, taskNote } = req.body;
   const taskObj = await new Promise((resolve, reject) => {
     const sql = "SELECT * FROM task WHERE Task_id=?";
     connection.query(sql, [taskId], (err, result) => {
@@ -265,25 +298,43 @@ async function editAndDemoteTask(req, res, next) {
     });
   });
 
-  console.log("taskObj", taskObj);
-
   const newTaskState = TASK_RANKS[taskObj.Task_state].demoted;
 
+  // System generated note string
+  let taskNoteString = createNoteString(
+    "System",
+    newTaskState,
+    `${req.user.username} has demoted the task to ${newTaskState}`
+  );
+
+  // User generated note string
+  if (taskNote) {
+    taskNoteString += createNoteString(
+      req.user.username,
+      newTaskState,
+      taskNote
+    );
+  }
   if (!newTaskState) {
     return res.send({
       success: false,
-      message: "Unable to promote this task further.",
+      message: "Unable to demote this task further.",
     });
   }
-  console.log("newTaskState", newTaskState);
-  // ("UPDATE task SET Task_name=?, Task_description=?, Task_plan=? WHERE Task_id=?");
 
   const sql =
-    "UPDATE task SET Task_name=?, Task_description=?, Task_plan=?, Task_state=? WHERE Task_id=?";
+    "UPDATE task SET Task_name=?, Task_description=?, Task_plan=?, Task_state=?, Task_notes=CONCAT(Task_notes,?) WHERE Task_id=?";
   const result = await new Promise((resolve, reject) => {
     connection.query(
       sql,
-      [taskName, taskDescription, taskPlan, newTaskState, taskId],
+      [
+        taskName,
+        taskDescription,
+        taskPlan,
+        newTaskState,
+        taskNoteString,
+        taskId,
+      ],
       (err, result) => {
         if (err) reject(err);
         if (result) {
