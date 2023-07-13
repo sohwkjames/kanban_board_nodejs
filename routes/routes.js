@@ -7,6 +7,7 @@ const userGroupController = require("../controllers/userGroupController");
 const applicationController = require("../controllers/applicationController");
 const taskController = require("../controllers/taskController");
 const planController = require("../controllers/planController");
+const notesController = require("../controllers/notesController");
 
 const {
   isAuthenticatedUser,
@@ -117,10 +118,35 @@ router
 
 router
   .route("/tasks")
-  .post(
-    isAuthenticatedUser,
-    authorizeAction("App_permit_create"),
-    taskController.create
-  );
+  .post(isAuthenticatedUser, taskController.create, notesController.addNotes);
+
+router.route("/task/:taskId").get(isAuthenticatedUser, taskController.getTask);
+router.route("/tasks").put(isAuthenticatedUser, taskController.editTask);
+
+router
+  .route("/task/promote")
+  .post(isAuthenticatedUser, taskController.editAndPromoteTask);
+
+router
+  .route("/task/demote")
+  .post(isAuthenticatedUser, taskController.editAndDemoteTask);
+
+router.route("/tasks-by-app").post(
+  isAuthenticatedUser,
+  // authorizeAction("App_permit_create"),
+  taskController.getTaskByApp
+);
+
+router.route("/notes").post(
+  isAuthenticatedUser,
+  // authorizeAction("App_permit_create"),
+  notesController.addNotes
+);
+
+// router.route("/tasks-by-plan").post(
+//   isAuthenticatedUser,
+//   // authorizeAction("App_permit_create"),
+//   taskController.getTaskByPlan
+// );
 
 module.exports = router;

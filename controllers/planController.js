@@ -4,13 +4,13 @@ const { config } = require("../utils/dbConfig");
 const connection = mysql.createConnection(config);
 
 async function create(req, res, next) {
-  const { planMvpName, planAppAcronym, planStartdate, planEnddate } = req.body;
+  const { planMvpName, appAcronym, planStartdate, planEnddate } = req.body;
 
   // Check if planMvpName + app acronym is taken
   const planNameExists = await new Promise((resolve, reject) => {
     const sql =
       "SELECT * FROM plan WHERE Plan_mvp_name = ? AND Plan_app_acronym = ? ";
-    connection.query(sql, [planMvpName, planAppAcronym], (err, result) => {
+    connection.query(sql, [planMvpName, appAcronym], (err, result) => {
       if (err) reject(err);
       if (result.length) {
         resolve(true);
@@ -31,7 +31,7 @@ async function create(req, res, next) {
   // Check if app acronym exist
   const appAcronymExists = await new Promise((resolve, reject) => {
     const sql = "SELECT * FROM application WHERE App_Acronym = ?";
-    connection.query(sql, [planAppAcronym], (err, result) => {
+    connection.query(sql, [appAcronym], (err, result) => {
       if (err) reject(err);
       console.log("james", result);
       if (result.length) {
@@ -56,7 +56,7 @@ async function create(req, res, next) {
   const insertResult = await new Promise((resolve, reject) => {
     connection.query(
       sql,
-      [planMvpName, planStartdate, planEnddate, planAppAcronym],
+      [planMvpName, planStartdate, planEnddate, appAcronym],
       (err, result) => {
         if (err) {
           reject(err);

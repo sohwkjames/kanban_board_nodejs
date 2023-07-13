@@ -4,52 +4,58 @@ const { isValidPassword } = require("../utils/auth");
 const { config } = require("../utils/dbConfig");
 const { getRNumber, incrementRNumber } = require("./applicationController");
 const { checkUserCanPerformAction } = require("./authController");
+const { TASK_STATES, TASK_RANKS } = require("../constants/taskState");
+const { createNoteString } = require("../utils/notes");
+const dayjs = require("dayjs");
+const { DATETIME_FORMAT } = require("../constants/timeFormat");
 
 connection = mysql.createConnection(config);
 
 async function create(req, res, next) {
-  const {
-    taskName,
-    taskDescription,
-    taskPlan,
-    taskAppAcronym,
-    taskState,
-    taskCreator,
-    taskOwner,
-    taskCreatedate,
-    taskNotes,
-  } = req.body;
+  const { taskName, taskDescription, taskPlan, appAcronym } = req.body;
 
-  console.log("task notes", taskNotes);
+  // const isValidPermissions = await checkUserCanPerformAction(
+  //   appAcronym,
+  //   req.user.username,
+  //   "App_permit_create"
+  // );
 
-  const isValidPermissions = await checkUserCanPerformAction(
-    taskAppAcronym,
-    req.user.username,
-    "App_permit_create"
-  );
-
-  if (!isValidPermissions) {
-    res.send({
-      success: false,
-      message: "You do not have permission to access this resource.",
-    });
-  }
+  // if (!isValidPermissions) {
+  //   res.send({
+  //     success: false,
+  //     message: "You do not have permission to access this resource.",
+  //   });
+  // }
 
   try {
     const rNumber = await new Promise((resolve, reject) => {
       let sql = "SELECT App_rnumber FROM application WHERE App_Acronym = ?";
-      connection.query(sql, [taskAppAcronym], (err, result) => {
+      connection.query(sql, [appAcronym], (err, result) => {
         if (err) reject(err);
+        console.log("app rnumber", result);
         resolve(result[0].App_rnumber);
       });
     });
 
-    const taskId = taskAppAcronym + "_" + rNumber;
+    const taskId = appAcronym + "_" + rNumber;
+
+    // generate task state
+    const taskState = TASK_STATES.open;
+    // generate task creator
+    const taskCreator = req.user.username;
+    // generate task owner
+    const taskOwner = req.user.username;
+
+    const taskNoteString = createNoteString(
+      taskOwner,
+      "open",
+      "User has created the task"
+    );
 
     const createdTask = await new Promise((resolve, reject) => {
       const sql = `INSERT INTO task
-      (Task_id, Task_name, Task_description, Task_plan, Task_app_acronym, Task_state, Task_creator, Task_owner, Task_createDate)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+      (Task_id, Task_name, Task_description, Task_plan, Task_app_acronym, Task_state, Task_creator, Task_owner, Task_createDate, Task_notes)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `;
       connection.query(
         sql,
@@ -58,11 +64,12 @@ async function create(req, res, next) {
           taskName,
           taskDescription,
           taskPlan,
-          taskAppAcronym,
+          appAcronym,
           taskState,
           taskCreator,
           taskOwner,
-          taskCreatedate,
+          taskCreateDate,
+          taskNoteString,
         ],
         (err, results) => {
           if (err) reject(err);
@@ -71,11 +78,12 @@ async function create(req, res, next) {
             taskName,
             taskDescription,
             taskPlan,
-            taskAppAcronym,
+            appAcronym,
             taskState,
             taskCreator,
             taskOwner,
-            taskCreatedate,
+            taskCreateDate,
+            taskNoteString,
           });
         }
       );
@@ -87,7 +95,7 @@ async function create(req, res, next) {
       const sql = "UPDATE application SET App_rnumber= ? WHERE App_Acronym = ?";
       connection.query(
         sql,
-        [incrementedRNumber, taskAppAcronym],
+        [incrementedRNumber, appAcronym],
         (err, results) => {
           if (err) reject(err);
           resolve(results);
@@ -103,53 +111,201 @@ async function create(req, res, next) {
   }
 }
 
-async function createTaskHelper(
-  taskId,
-  taskName,
-  taskDescription,
-  taskPlan,
-  taskAppAcronym,
-  taskState,
-  taskCreator,
-  taskOwner,
-  taskCreatedate
-) {
-  const sql = `INSERT INTO task 
-  (Task_id, Task_name, Task_description, Task_plan, Task_app_acronym, Task_state, Task_creator, Task_owner, Task_createDate)
-  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-  `;
-  return new Promise((resolve, reject) => {
+async function getTaskByApp(req, res, next) {
+  const { appAcronym } = req.body;
+
+  const sql = "SELECT * FROM task WHERE Task_app_acronym = ?";
+  const result = await new Promise((resolve, reject) => {
+    connection.query(sql, [appAcronym], (err, result) => {
+      if (err) reject(err);
+      else {
+        resolve(result);
+      }
+    });
+  });
+
+  if (result) {
+    res.send({
+      success: true,
+      data: result,
+    });
+  }
+}
+
+async function getTask(req, res, next) {
+  const taskId = req.params.taskId;
+  console.log("taskId", taskId);
+
+  const sql = "SELECT * FROM task WHERE Task_id = ?";
+  const result = await new Promise((resolve, reject) => {
+    connection.query(sql, [taskId], (err, result) => {
+      if (err) reject(err);
+      else {
+        console.log("Result", result);
+        resolve(result);
+      }
+    });
+  });
+
+  if (result) {
+    res.send({
+      success: true,
+      data: result,
+    });
+  }
+}
+
+async function getTaskByPlan(req, res, next) {
+  // const { planName } = req.body;
+  res.send({ success: true });
+}
+
+async function editTask(req, res, next) {
+  const { taskId, taskName, taskDescription, taskPlan, taskNote } = req.body;
+
+  // Get current task state
+  const taskObj = await new Promise((resolve, reject) => {
+    const sql = "SELECT * FROM task WHERE Task_id=?";
+    connection.query(sql, [taskId], (err, result) => {
+      if (err) reject(err);
+      resolve(result[0]);
+    });
+  });
+
+  const taskState = taskObj.Task_state;
+  // Create task note string
+  const taskNoteString = createNoteString(username, taskState, taskNote);
+  // Update task owner, concat task note string
+
+  const sql =
+    "UPDATE task SET Task_name=?, Task_description=?, Task_plan=?, Task_owner=?, Task_notes=CONCAT(Task_notes,?) WHERE Task_id=?";
+  const result = await new Promise((resolve, reject) => {
     connection.query(
       sql,
       [
-        taskId,
         taskName,
         taskDescription,
         taskPlan,
-        taskAppAcronym,
-        taskState,
-        taskCreator,
-        taskOwner,
-        taskCreatedate,
+        req.user.username,
+        taskNoteString,
+        taskId,
       ],
-      (err, results) => {
-        if (err) {
-          reject("Failed to create task");
+      (err, result) => {
+        if (err) reject(err);
+        if (result) {
+          console.log("result", result);
+          resolve(result);
         }
-        resolve({
-          taskId,
-          taskName,
-          taskDescription,
-          taskPlan,
-          taskAppAcronym,
-          taskState,
-          taskCreator,
-          taskOwner,
-          taskCreatedate,
-        });
       }
     );
   });
+  if (result) {
+    res.send({ success: true });
+  } else {
+    res.send({ success: false });
+  }
 }
 
-module.exports = { create };
+async function editAndPromoteTask(req, res, next) {
+  const { taskId, taskName, taskDescription, taskPlan } = req.body;
+  const taskObj = await new Promise((resolve, reject) => {
+    const sql = "SELECT * FROM task WHERE Task_id=?";
+    connection.query(sql, [taskId], (err, result) => {
+      if (err) reject(err);
+      if (result.length) {
+        resolve(result[0]);
+      }
+    });
+  });
+
+  console.log("taskObj", taskObj);
+
+  const newTaskState = TASK_RANKS[taskObj.Task_state].promoted;
+
+  if (!newTaskState) {
+    res.send({
+      success: false,
+      message: "Unable to promote this task further.",
+    });
+  }
+  console.log("newTaskState", newTaskState);
+  // ("UPDATE task SET Task_name=?, Task_description=?, Task_plan=? WHERE Task_id=?");
+
+  const sql =
+    "UPDATE task SET Task_name=?, Task_description=?, Task_plan=?, Task_state=? WHERE Task_id=?";
+  const result = await new Promise((resolve, reject) => {
+    connection.query(
+      sql,
+      [taskName, taskDescription, taskPlan, newTaskState, taskId],
+      (err, result) => {
+        if (err) reject(err);
+        if (result) {
+          console.log("result", result);
+          resolve(result);
+        }
+      }
+    );
+  });
+  if (result) {
+    res.send({ success: true });
+  } else {
+    res.send({ success: false });
+  }
+}
+
+async function editAndDemoteTask(req, res, next) {
+  const { taskId, taskName, taskDescription, taskPlan } = req.body;
+  const taskObj = await new Promise((resolve, reject) => {
+    const sql = "SELECT * FROM task WHERE Task_id=?";
+    connection.query(sql, [taskId], (err, result) => {
+      if (err) reject(err);
+      if (result.length) {
+        resolve(result[0]);
+      }
+    });
+  });
+
+  console.log("taskObj", taskObj);
+
+  const newTaskState = TASK_RANKS[taskObj.Task_state].demoted;
+
+  if (!newTaskState) {
+    return res.send({
+      success: false,
+      message: "Unable to promote this task further.",
+    });
+  }
+  console.log("newTaskState", newTaskState);
+  // ("UPDATE task SET Task_name=?, Task_description=?, Task_plan=? WHERE Task_id=?");
+
+  const sql =
+    "UPDATE task SET Task_name=?, Task_description=?, Task_plan=?, Task_state=? WHERE Task_id=?";
+  const result = await new Promise((resolve, reject) => {
+    connection.query(
+      sql,
+      [taskName, taskDescription, taskPlan, newTaskState, taskId],
+      (err, result) => {
+        if (err) reject(err);
+        if (result) {
+          console.log("result", result);
+          resolve(result);
+        }
+      }
+    );
+  });
+  if (result) {
+    res.send({ success: true });
+  } else {
+    res.send({ success: false });
+  }
+}
+
+module.exports = {
+  create,
+  getTaskByApp,
+  getTaskByPlan,
+  getTask,
+  editTask,
+  editAndPromoteTask,
+  editAndDemoteTask,
+};

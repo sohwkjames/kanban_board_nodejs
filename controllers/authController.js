@@ -197,7 +197,6 @@ async function checkUserCanPerformAction(appAcronym, username, actionName) {
 
   const permittedGroup = app[actionName];
   const result = await CheckGroup(username, permittedGroup);
-  console.log("result", result);
   return result;
   // Get username's usergroups
 
