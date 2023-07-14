@@ -99,7 +99,7 @@ async function getByAppAcronym(req, res, next) {
       });
     });
 
-    console.log("getPlan by app", results);
+    // Format mysql datetime to DATE_FORMAT
     const formattedResults = results.map((record) => {
       return {
         ...record,
@@ -107,8 +107,6 @@ async function getByAppAcronym(req, res, next) {
         Plan_enddate: dayjs(record.Plan_enddate).format(DATE_FORMAT),
       };
     });
-
-    console.log("formattedResults", formattedResults);
 
     res.send({ success: true, data: formattedResults });
   } catch (e) {

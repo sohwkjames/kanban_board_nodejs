@@ -119,33 +119,6 @@ async function create(req, res, next) {
   }
 }
 
-async function getTaskByApp(req, res, next) {
-  const { appAcronym } = req.body;
-
-  const sql = "SELECT * FROM task WHERE Task_app_acronym = ?";
-  const result = await new Promise((resolve, reject) => {
-    connection.query(sql, [appAcronym], (err, result) => {
-      if (err) reject(err);
-      else {
-        resolve(result);
-      }
-    });
-  });
-
-  const formattedResults = result.map((record) => {
-    let notes = noteStringToArr(record.Task_notes);
-    const newObj = { ...record, Task_notes: notes };
-    return newObj;
-  });
-
-  if (result) {
-    res.send({
-      success: true,
-      data: formattedResults,
-    });
-  }
-}
-
 async function getTask(req, res, next) {
   const taskId = req.params.taskId;
 
@@ -173,9 +146,64 @@ async function getTask(req, res, next) {
   }
 }
 
+async function getTaskByApp(req, res, next) {
+  const { appAcronym } = req.body;
+
+  // const sql = "SELECT * FROM task WHERE Task_app_acronym = ?";
+  const sql = `SELECT * FROM task 
+  LEFT JOIN plan ON task.Task_plan = plan.Plan_mvp_name 
+  WHERE task.Task_app_acronym = ?`;
+
+  const result = await new Promise((resolve, reject) => {
+    connection.query(sql, [appAcronym], (err, result) => {
+      if (err) reject(err);
+      else {
+        resolve(result);
+      }
+    });
+  });
+
+  const formattedResults = result.map((record) => {
+    let notes = noteStringToArr(record.Task_notes);
+    const newObj = { ...record, Task_notes: notes };
+    return newObj;
+  });
+
+  if (result) {
+    res.send({
+      success: true,
+      data: formattedResults,
+    });
+  }
+}
+
 async function getTaskByPlan(req, res, next) {
-  // const { planName } = req.body;
-  res.send({ success: true });
+  const { appAcronym, planName } = req.body;
+
+  // const sql = "SELECT * FROM task WHERE Task_app_acronym = ? AND Task_plan = ?";
+  const sql = `SELECT * FROM task LEFT JOIN plan ON task.Task_plan = plan.Plan_mvp_name AND task.Task_app_acronym = plan.Plan_app_acronym WHERE task.Task_app_acronym = ? AND task.Task_plan = ?`;
+
+  const result = await new Promise((resolve, reject) => {
+    connection.query(sql, [appAcronym, planName], (err, result) => {
+      if (err) reject(err);
+      else {
+        resolve(result);
+      }
+    });
+  });
+
+  const formattedResults = result.map((record) => {
+    let notes = noteStringToArr(record.Task_notes);
+    const newObj = { ...record, Task_notes: notes };
+    return newObj;
+  });
+
+  if (result) {
+    res.send({
+      success: true,
+      data: formattedResults,
+    });
+  }
 }
 
 async function editTask(req, res, next) {

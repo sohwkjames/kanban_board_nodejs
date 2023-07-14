@@ -143,10 +143,10 @@ router.route("/notes").post(
   notesController.addNotes
 );
 
-// router.route("/tasks-by-plan").post(
-//   isAuthenticatedUser,
-//   // authorizeAction("App_permit_create"),
-//   taskController.getTaskByPlan
-// );
+router.route("/tasks-by-plan").post(
+  isAuthenticatedUser,
+  // authorizeAction("App_permit_create"),
+  taskController.getTaskByPlan
+);
 
 module.exports = router;
