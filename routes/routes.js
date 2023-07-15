@@ -90,6 +90,14 @@ router
 
 router
   .route("/applications")
+  .put(
+    isAuthenticatedUser,
+    authorizeUserGroups(["projectLead"]),
+    applicationController.edit
+  );
+
+router
+  .route("/applications")
   .get(isAuthenticatedUser, applicationController.getAll);
 
 router

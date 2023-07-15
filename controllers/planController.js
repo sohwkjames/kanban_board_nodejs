@@ -2,10 +2,27 @@ const mysql = require("mysql");
 const { config } = require("../utils/dbConfig");
 const dayjs = require("dayjs");
 const { DATETIME_FORMAT, DATE_FORMAT } = require("../constants/timeFormat");
+const { checkUserCanPerformAction } = require("./authController");
 const connection = mysql.createConnection(config);
 
 async function create(req, res, next) {
-  const { planMvpName, appAcronym, planStartdate, planEnddate } = req.body;
+  const { planMvpName, appAcronym, planStartdate, planEnddate, planColour } =
+    req.body;
+
+  // Check if user has permission to do this action.
+  const actionName = "App_permit_open";
+  const isActionAllowed = await checkUserCanPerformAction(
+    appAcronym,
+    req.user.username,
+    actionName
+  );
+
+  if (!isActionAllowed) {
+    return res.send({
+      success: false,
+      message: "You do not have permission to perform this action.",
+    });
+  }
 
   // Check if planMvpName + app acronym is taken
   const planNameExists = await new Promise((resolve, reject) => {
@@ -52,11 +69,11 @@ async function create(req, res, next) {
 
   // Add to table
   const sql =
-    "INSERT INTO plan (Plan_mvp_name, Plan_startdate, Plan_enddate, Plan_app_acronym) VALUES (?, ?, ?, ?)";
+    "INSERT INTO plan (Plan_mvp_name, Plan_startdate, Plan_enddate, Plan_app_acronym, Plan_colour) VALUES (?, ?, ?, ?, ?)";
   const insertResult = await new Promise((resolve, reject) => {
     connection.query(
       sql,
-      [planMvpName, planStartdate, planEnddate, appAcronym],
+      [planMvpName, planStartdate, planEnddate, appAcronym, planColour],
       (err, result) => {
         if (err) {
           reject(err);

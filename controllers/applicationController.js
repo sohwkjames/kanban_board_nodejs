@@ -2,6 +2,7 @@ const jwt = require("jsonwebtoken");
 const mysql = require("mysql");
 const { isValidPassword } = require("../utils/auth");
 const { config } = require("../utils/dbConfig");
+const { CheckGroup } = require("./authController");
 
 // const config = {
 //   host: "localhost",
@@ -25,6 +26,17 @@ async function create(req, res, next) {
     appPermitDoing,
     appPermitDone,
   } = req.body;
+
+  // Check if user has projectLead group.
+  const isActionAllowed = CheckGroup(req.user.username, "projectLead");
+
+  if (!isActionAllowed) {
+    return res.send({
+      success: false,
+      message: "You do not have permission to perform this action.",
+    });
+  }
+
   if (!appAcronym || !appRnumber || !appStartdate || !appEnddate) {
     return res.send({
       success: false,
@@ -65,6 +77,66 @@ async function create(req, res, next) {
       appRnumber,
       appDescription,
       appStartdate,
+      appEnddate,
+      appPermitOpen,
+      appPermitTodolist,
+      appPermitDoing,
+      appPermitDone,
+      appPermitCreate,
+    ],
+    (err, result) => {
+      console.log("err", err);
+      if (err) {
+        return res.send({
+          success: false,
+          message: "Failed to add application",
+        });
+      } else {
+        return res.send({
+          success: true,
+          message: "Application added",
+        });
+      }
+    }
+  );
+}
+
+async function edit(req, res, next) {
+  const {
+    appDescription,
+    appEnddate,
+    appPermitCreate,
+    appPermitOpen,
+    appPermitTodolist,
+    appPermitDoing,
+    appPermitDone,
+  } = req.body;
+
+  // Check if user has projectLead group.
+  const isActionAllowed = CheckGroup(req.user.username, "projectLead");
+
+  if (!isActionAllowed) {
+    return res.send({
+      success: false,
+      message: "You do not have permission to perform this action.",
+    });
+  }
+
+  if (!appEnddate) {
+    return res.send({
+      success: false,
+      message:
+        "App acronym, app running number, app start date and app end date cannot be empty",
+    });
+  }
+
+  const sql = `UPDATE application SET App_description = ?, App_enddate = ?, App_permit_open = ?,
+   App_permit_todolist = ?, App_permit_doing = ?, App_permit_done = ?, App_permit_create = ?`;
+
+  connection.query(
+    sql,
+    [
+      appDescription,
       appEnddate,
       appPermitOpen,
       appPermitTodolist,
@@ -237,6 +309,7 @@ async function getAppByName(appName) {
 
 module.exports = {
   create,
+  edit,
   getAll,
   getOne,
   getRNumber,
