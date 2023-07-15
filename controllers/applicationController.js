@@ -85,7 +85,6 @@ async function create(req, res, next) {
       appPermitCreate,
     ],
     (err, result) => {
-      console.log("err", err);
       if (err) {
         return res.send({
           success: false,
@@ -103,6 +102,7 @@ async function create(req, res, next) {
 
 async function edit(req, res, next) {
   const {
+    appAcronym,
     appDescription,
     appEnddate,
     appPermitCreate,
@@ -131,7 +131,7 @@ async function edit(req, res, next) {
   }
 
   const sql = `UPDATE application SET App_description = ?, App_enddate = ?, App_permit_open = ?,
-   App_permit_todolist = ?, App_permit_doing = ?, App_permit_done = ?, App_permit_create = ?`;
+   App_permit_todolist = ?, App_permit_doing = ?, App_permit_done = ?, App_permit_create = ? WHERE App_acronym=?`;
 
   connection.query(
     sql,
@@ -143,9 +143,9 @@ async function edit(req, res, next) {
       appPermitDoing,
       appPermitDone,
       appPermitCreate,
+      appAcronym,
     ],
     (err, result) => {
-      console.log("err", err);
       if (err) {
         return res.send({
           success: false,
@@ -154,7 +154,7 @@ async function edit(req, res, next) {
       } else {
         return res.send({
           success: true,
-          message: "Application added",
+          message: "Application edited",
         });
       }
     }

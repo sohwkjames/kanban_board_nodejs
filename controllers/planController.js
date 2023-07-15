@@ -99,8 +99,6 @@ async function getAll(req, res, next) {
     });
   });
 
-  console.log("getAll plans", result);
-
   res.send({ success: true, data: plans });
 }
 

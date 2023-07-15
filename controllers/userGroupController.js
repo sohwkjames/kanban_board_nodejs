@@ -23,7 +23,6 @@ async function getAllHelper() {
     connection.query(sql, [], (err, result, fields) => {
       if (err) reject(err);
       const tmpArr = result.map((record) => record.groupname);
-      // console.log("tmparr", tmpArr);
       resolve(tmpArr);
     });
   });
