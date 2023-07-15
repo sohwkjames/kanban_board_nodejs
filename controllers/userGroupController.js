@@ -141,4 +141,19 @@ async function addUserGroupsToUser(username, groupnames) {
   });
 }
 
-module.exports = { getAll, add, addUserGroupsToUser };
+async function getMyUserGroups(req, res, next) {
+  const sql = "SELECT * FROM username_usergroup_pivot WHERE username = ?";
+  const result = await new Promise((resolve, reject) => {
+    connection.query(sql, [req.user.username], (err, result) => {
+      if (err) reject(err);
+      resolve(result);
+    });
+  });
+
+  const resultArr = result.map((row) => row.usergroup);
+  if (result) {
+    res.send({ success: true, data: resultArr });
+  }
+}
+
+module.exports = { getAll, add, addUserGroupsToUser, getMyUserGroups };

@@ -22,7 +22,7 @@ async function create(req, res, next) {
   );
 
   if (!isValidPermissions) {
-    res.send({
+    return res.send({
       success: false,
       message: "You do not have permission to access this resource.",
     });

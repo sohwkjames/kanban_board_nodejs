@@ -4,13 +4,6 @@ const { isValidPassword } = require("../utils/auth");
 const { config } = require("../utils/dbConfig");
 const { CheckGroup } = require("./authController");
 
-// const config = {
-//   host: "localhost",
-//   user: "root",
-//   password: process.env.LOCAL_DB_PASSWORD,
-//   database: process.env.LOCAL_DB_DATABASE,
-// };
-
 connection = mysql.createConnection(config);
 
 async function create(req, res, next) {

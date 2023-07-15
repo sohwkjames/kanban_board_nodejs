@@ -49,18 +49,16 @@ router
     userController.allUsers
   );
 
-router
-  .route("/usergroups")
-  .get(
-    isAuthenticatedUser,
-    authorizeUserGroups([
-      "admin",
-      "projectLead",
-      "projectManager",
-      "developer",
-    ]),
-    userGroupController.getAll
-  );
+router.route("/usergroups").get(
+  isAuthenticatedUser,
+  // authorizeUserGroups([
+  //   "admin",
+  //   "projectLead",
+  //   "projectManager",
+  //   "developer",
+  // ]),
+  userGroupController.getAll
+);
 
 router
   .route("/usergroups")
@@ -69,6 +67,10 @@ router
     authorizeUserGroups(["admin"]),
     userGroupController.add
   );
+
+router
+  .route("/my-usergroups")
+  .get(isAuthenticatedUser, userGroupController.getMyUserGroups);
 
 router
   .route("/check-permission")
