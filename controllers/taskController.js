@@ -4,7 +4,11 @@ const { isValidPassword } = require("../utils/auth");
 const { config } = require("../utils/dbConfig");
 const { getRNumber, incrementRNumber } = require("./applicationController");
 const { checkUserCanPerformAction } = require("./authController");
-const { TASK_STATES, TASK_RANKS } = require("../constants/taskState");
+const {
+  TASK_STATES,
+  TASK_RANKS,
+  ACTION_PERMISSION_COLUMNS,
+} = require("../constants/taskState");
 const { createNoteString, noteStringToArr } = require("../utils/notes");
 const dayjs = require("dayjs");
 const { DATETIME_FORMAT } = require("../constants/timeFormat");
@@ -219,6 +223,23 @@ async function editTask(req, res, next) {
   });
 
   const taskState = taskObj.Task_state;
+  // Get the application name
+  const appAcronym = taskObj.Task_app_acronym;
+
+  const isActionAllowed = await checkUserCanPerformAction(
+    appAcronym,
+    req.user.username,
+    ACTION_PERMISSION_COLUMNS[taskState]
+  );
+
+  console.log("isActionAllowed", isActionAllowed);
+  if (!isActionAllowed) {
+    return res.send({
+      success: false,
+      message: "You do not have permission to access this resource",
+    });
+  }
+
   // System generated note string
   let taskNoteString = createNoteString(
     "System",

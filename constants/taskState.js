@@ -14,4 +14,13 @@ const TASK_RANKS = {
   closed: { promoted: null, demoted: TASK_STATES.done },
 };
 
-module.exports = { TASK_STATES, TASK_RANKS };
+const ACTION_PERMISSION_COLUMNS = {
+  create: "App_permit_create",
+  open: "App_permit_open",
+  todo: "App_permit_todolist",
+  doing: "App_permit_doing",
+  done: "App_permit_done",
+  closed: "App_permit_closed",
+};
+
+module.exports = { TASK_STATES, TASK_RANKS, ACTION_PERMISSION_COLUMNS };

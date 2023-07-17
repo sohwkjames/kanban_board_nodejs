@@ -126,9 +126,7 @@ router
   .route("/plans/:appAcronym")
   .get(isAuthenticatedUser, planController.getByAppAcronym);
 
-router
-  .route("/tasks")
-  .post(isAuthenticatedUser, taskController.create, notesController.addNotes);
+router.route("/tasks").post(isAuthenticatedUser, taskController.create);
 
 router.route("/task/:taskId").get(isAuthenticatedUser, taskController.getTask);
 router.route("/tasks").put(isAuthenticatedUser, taskController.editTask);
