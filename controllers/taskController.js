@@ -12,6 +12,7 @@ const {
 const { createNoteString, noteStringToArr } = require("../utils/notes");
 const dayjs = require("dayjs");
 const { DATETIME_FORMAT } = require("../constants/timeFormat");
+const { generateMailOptions, transporter } = require("../utils/email");
 
 connection = mysql.createConnection(config);
 
@@ -232,7 +233,6 @@ async function editTask(req, res, next) {
     ACTION_PERMISSION_COLUMNS[taskState]
   );
 
-  console.log("isActionAllowed", isActionAllowed);
   if (!isActionAllowed) {
     return res.send({
       success: false,
@@ -283,6 +283,7 @@ async function editTask(req, res, next) {
 
 async function editAndPromoteTask(req, res, next) {
   const { taskId, taskName, taskDescription, taskPlan, taskNote } = req.body;
+
   const taskObj = await new Promise((resolve, reject) => {
     const sql = "SELECT * FROM task WHERE Task_id=?";
     connection.query(sql, [taskId], (err, result) => {
@@ -293,7 +294,22 @@ async function editAndPromoteTask(req, res, next) {
     });
   });
 
+  const taskState = taskObj.Task_state;
   const newTaskState = TASK_RANKS[taskObj.Task_state].promoted;
+  const appAcronym = taskObj.Task_app_acronym;
+
+  const isActionAllowed = await checkUserCanPerformAction(
+    appAcronym,
+    req.user.username,
+    ACTION_PERMISSION_COLUMNS[taskState]
+  );
+
+  if (!isActionAllowed) {
+    return res.send({
+      success: false,
+      message: "You do not have permission to access this resource",
+    });
+  }
 
   // System generated note string
   let taskNoteString = createNoteString(
@@ -338,6 +354,29 @@ async function editAndPromoteTask(req, res, next) {
       }
     );
   });
+
+  if (newTaskState === "done") {
+    // Get all the email receipients
+    const sql = `SELECT p.username, accounts.email 
+    FROM username_usergroup_pivot AS p 
+    LEFT JOIN application
+    ON p.usergroup = application.App_permit_done
+    LEFT JOIN accounts
+    ON p.username = accounts.username
+    WHERE application.App_Acronym='facebook';`;
+    const emailsArr = await new Promise((resolve, reject) => {
+      connection.query(sql, [appAcronym], (err, result) => {
+        if (err) reject(err);
+        const tmp = result.map((row) => row.email);
+        const filtered = tmp.filter((name) => name !== null);
+        const string = filtered.join(",");
+        resolve(filtered);
+      });
+    });
+
+    sendEmailNotification(emailsArr, taskId);
+  }
+
   if (result) {
     res.send({ success: true });
   } else {
@@ -347,6 +386,7 @@ async function editAndPromoteTask(req, res, next) {
 
 async function editAndDemoteTask(req, res, next) {
   const { taskId, taskName, taskDescription, taskPlan, taskNote } = req.body;
+
   const taskObj = await new Promise((resolve, reject) => {
     const sql = "SELECT * FROM task WHERE Task_id=?";
     connection.query(sql, [taskId], (err, result) => {
@@ -357,7 +397,22 @@ async function editAndDemoteTask(req, res, next) {
     });
   });
 
+  const taskState = taskObj.Task_state;
+  const appAcronym = taskObj.Task_app_acronym;
   const newTaskState = TASK_RANKS[taskObj.Task_state].demoted;
+
+  const isActionAllowed = await checkUserCanPerformAction(
+    appAcronym,
+    req.user.username,
+    ACTION_PERMISSION_COLUMNS[taskState]
+  );
+
+  if (!isActionAllowed) {
+    return res.send({
+      success: false,
+      message: "You do not have permission to access this resource",
+    });
+  }
 
   // System generated note string
   let taskNoteString = createNoteString(
@@ -407,6 +462,19 @@ async function editAndDemoteTask(req, res, next) {
   } else {
     res.send({ success: false });
   }
+}
+
+async function sendEmailNotification(emailString, taskId) {
+  const mailOptions = generateMailOptions(emailString, taskId);
+
+  const result = await new Promise((resolve, reject) => {
+    transporter.sendMail(mailOptions, (err, info) => {
+      if (err) reject(err);
+      if (info) resolve(info);
+    });
+  });
+
+  return result;
 }
 
 module.exports = {
