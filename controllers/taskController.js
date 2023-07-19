@@ -253,6 +253,7 @@ async function editTask(req, res, next) {
   }
   // Update task owner, concat task note string
 
+  console.log("james2", taskNote);
   const sql =
     "UPDATE task SET Task_name=?, Task_description=?, Task_plan=?, Task_owner=?, Task_notes=CONCAT(Task_notes,?) WHERE Task_id=?";
   const result = await new Promise((resolve, reject) => {
@@ -334,7 +335,7 @@ async function editAndPromoteTask(req, res, next) {
   }
 
   const sql =
-    "UPDATE task SET Task_name=?, Task_description=?, Task_plan=?, Task_state=?, Task_notes=CONCAT(Task_notes,?) WHERE Task_id=?";
+    "UPDATE task SET Task_name=?, Task_description=?, Task_plan=?, Task_owner=?, Task_state=?, Task_notes=CONCAT(Task_notes,?) WHERE Task_id=?";
   const result = await new Promise((resolve, reject) => {
     connection.query(
       sql,
@@ -342,6 +343,7 @@ async function editAndPromoteTask(req, res, next) {
         taskName,
         taskDescription,
         taskPlan,
+        req.user.username,
         newTaskState,
         taskNoteString,
         taskId,
@@ -421,6 +423,7 @@ async function editAndDemoteTask(req, res, next) {
     `${req.user.username} has demoted the task to ${newTaskState}`
   );
 
+  console.log("james1", taskNoteString);
   // User generated note string
   if (taskNote) {
     taskNoteString += createNoteString(
@@ -429,6 +432,9 @@ async function editAndDemoteTask(req, res, next) {
       taskNote
     );
   }
+
+  console.log("james2", taskNoteString);
+
   if (!newTaskState) {
     return res.send({
       success: false,
@@ -437,7 +443,7 @@ async function editAndDemoteTask(req, res, next) {
   }
 
   const sql =
-    "UPDATE task SET Task_name=?, Task_description=?, Task_plan=?, Task_state=?, Task_notes=CONCAT(Task_notes,?) WHERE Task_id=?";
+    "UPDATE task SET Task_name=?, Task_description=?, Task_plan=?, Task_owner=?, Task_state=?, Task_notes=CONCAT(Task_notes,?) WHERE Task_id=?";
   const result = await new Promise((resolve, reject) => {
     connection.query(
       sql,
@@ -445,6 +451,7 @@ async function editAndDemoteTask(req, res, next) {
         taskName,
         taskDescription,
         taskPlan,
+        req.user.username,
         newTaskState,
         taskNoteString,
         taskId,
@@ -473,6 +480,8 @@ async function sendEmailNotification(emailString, taskId) {
       if (info) resolve(info);
     });
   });
+
+  console.log("Send email result", result);
 
   return result;
 }

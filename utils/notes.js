@@ -13,6 +13,7 @@ function createNoteString(username, taskState, noteContent, timeStamp) {
     noteString += dayjs().format(DATETIME_FORMAT) + "**";
   }
   noteString += "||";
+  console.log("james2", noteString);
 
   return noteString;
 }
