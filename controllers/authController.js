@@ -168,6 +168,9 @@ async function checkUserCanPerformAction(appAcronym, username, actionName) {
     const app = await new Promise((resolve, reject) => {
         const sql = "SELECT * FROM application WHERE App_acronym = ?";
         connection.query(sql, [appAcronym], (err, result) => {
+            if (!result || result.length === 0) {
+                reject("test");
+            }
             resolve(result[0]);
         });
     });
