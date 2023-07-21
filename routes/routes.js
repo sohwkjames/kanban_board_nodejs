@@ -8,6 +8,7 @@ const applicationController = require("../controllers/applicationController");
 const taskController = require("../controllers/taskController");
 const planController = require("../controllers/planController");
 const notesController = require("../controllers/notesController");
+const getTaskByTaskStateC = require("../microservices/getTaskByState")
 
 const {
   isAuthenticatedUser,
@@ -126,7 +127,7 @@ router
   .route("/plans/:appAcronym")
   .get(isAuthenticatedUser, planController.getByAppAcronym);
 
-router.route("/tasks").post(isAuthenticatedUser, taskController.create);
+router.route("/tasks").post(taskController.create);
 
 router.route("/task/:taskId").get(isAuthenticatedUser, taskController.getTask);
 router.route("/tasks").put(isAuthenticatedUser, taskController.editTask);
@@ -156,5 +157,7 @@ router.route("/tasks-by-plan").post(
   // authorizeAction("App_permit_create"),
   taskController.getTaskByPlan
 );
+
+router.route("/getTaskByState").post(getTaskByTaskStateC.getTaskByTaskState);
 
 module.exports = router;

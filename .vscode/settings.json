@@ -2,8 +2,7 @@
   "workbench.colorTheme": "Default Dark Modern",
   "workbench.colorCustomizations": {
     "[Default Dark Modern]": {
-      "activityBar.background": "#4729ce",
-      "statusBar.background": "#4729ce"
+
     }
   }
 }

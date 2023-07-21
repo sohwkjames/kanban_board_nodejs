@@ -157,7 +157,9 @@ async function getUser(username) {
   const sql = "SELECT * FROM accounts WHERE username = ?";
   return new Promise((resolve, reject) => {
     connection.query(sql, [username], function (e, results, fields) {
-      if (e) reject(e);
+      if (e){
+        reject(e)
+      }
       resolve(results);
     });
   });
@@ -209,6 +211,7 @@ async function getCompleteUser(username) {
   // This method returns a complete user object with all the usergroups etc.
 
   const user = await getUser(username);
+  console.log(user)
   const groups = await getUserGroups(username);
   user[0].userGroups = groups;
 

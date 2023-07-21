@@ -21,6 +21,7 @@ const saltRounds = 10;
 
 async function login(req, res, next) {
   const { username, password } = req.body;
+  // console.log(username)
 
   try {
     const user = await getCompleteUser(username);
@@ -38,23 +39,23 @@ async function login(req, res, next) {
     const isAdmin = await CheckGroup(user.username, "admin");
 
     // Generate JWT with username only.
-    const token = jwt.sign(
-      {
-        username: user[0].username,
-        isAdmin: isAdmin,
-      },
-      process.env.JWT_SECRET
-    );
+    // const token = jwt.sign(
+    //   {
+    //     username: user[0].username,
+    //     isAdmin: isAdmin,
+    //   },
+    //   process.env.JWT_SECRET
+    // );
 
     // Send token to FE in response
-    res.status(200).send({
+    return res.status(200).send({
       success: true,
-      token: token,
+      // token: token,
       userGroups: user[0].userGroups,
       isActive: user[0].isActive,
     });
   } catch {
-    res.send({
+    return res.send({
       success: false,
       message: "Invalid username or password",
     });

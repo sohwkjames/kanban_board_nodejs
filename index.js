@@ -21,6 +21,16 @@ app.use(cors());
 const authRoutes = require("./routes/routes");
 app.use(authRoutes);
 
+// handles 400 error
+app.use((err, req, res, next) => {
+  console.log(err);
+  if (!err) return next();
+  return res.status(200).json({
+    status: 400,
+    error: 'OOps! Bad request',
+  });
+});
+
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
   console.log(`Server started on port ${PORT}`);
