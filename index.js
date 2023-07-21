@@ -9,6 +9,22 @@ dotenv.config({ path: "./config/config.env" });
 app.use(express.json({ limit: "25mb" }));
 app.use(cors());
 
+app.use(function (req, res, next) {
+  var err = null;
+  try {
+    decodeURIComponent(req.path);
+  } catch (e) {
+    err = e;
+  }
+  if (err) {
+    console.log(err, req.url);
+    return res.send({
+      code: "Invalid url",
+    });
+  }
+  next();
+});
+
 // app.use(function (req, res, next) {
 //   res.header("Access-Control-Allow-Origin", "http://localhost:3000*");
 //   res.header(
