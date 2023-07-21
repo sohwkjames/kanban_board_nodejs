@@ -1,8 +1,8 @@
 const config = {
-  host: "localhost",
-  user: "root",
-  password: process.env.LOCAL_DB_PASSWORD,
-  database: process.env.LOCAL_DB_DATABASE,
+    host: "localhost",
+    user: "root",
+    password: "root",
+    database: "a3",
 };
 
 module.exports = { config };
