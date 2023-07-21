@@ -12,11 +12,29 @@ connection = mysql.createConnection(config);
 
 
 async function getTaskByTaskState(req,res,next){
+    console.log(req.body);
+    // //check json body
+    // try{
+    //     console.log(JSON.parse(req.body));
+    //     // JSON.parse(req.body);
+    // }catch(e){
+    //     console.log(e)
+    //     return res.status(200).send({
+    //         code:"invalid JSON body"
+    //     })
+    // }
 
     //Get values from json body
     if(!req.body.username || !req.body.password || !req.body.state){
         return res.status(200).send({
             code:"mandatory values not filled"
+        })
+    }
+
+    //check for params
+    if(Object.keys(req.query).length > 0 ){
+        return res.status(200).send({
+            code:"query params not allowed"
         })
     }
 

@@ -17,21 +17,23 @@ app.use(cors());
 //   );
 //   next();
 // });
-
+app.use((err, req, res, next) => {
+  if (err instanceof SyntaxError && err.status === 400 && 'body' in err) {
+    res.status(400).json({ error: 'Invalid JSON' });
+  } else {
+    next();
+  }
+});
 const authRoutes = require("./routes/routes");
 app.use(authRoutes);
+app.use((req, res, next) => {
+  res.status(200).send({
+    code:"invalid route"
+  })
+})
 
-// handles 400 error
-app.use((err, req, res, next) => {
-  console.log(err);
-  if (!err) return next();
-  return res.status(200).json({
-    status: 400,
-    error: 'OOps! Bad request',
-  });
-});
 
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
-  console.log(`Server started on port ${PORT}`);
+    console.log(`Server started on port ${PORT}`);
 });
