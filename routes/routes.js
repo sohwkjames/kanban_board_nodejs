@@ -62,12 +62,7 @@ router.route("/applications/earliest-end-date").post(isAuthenticatedUser, applic
 
 router.route("/applications/latest-end-date").post(isAuthenticatedUser, applicationController.getLatestEndDate);
 
-router.route("/plans").post(
-    isAuthenticatedUser,
-    authorizeAction("App_permit_open"),
-    // authorizeUserGroups(["projectManager"]),
-    planController.create
-);
+router.route("/plans").post(isAuthenticatedUser, authorizeAction("App_permit_open"), authorizeUserGroups(["projectManager"]), planController.create);
 
 router.route("/plans").get(isAuthenticatedUser, planController.getAll);
 router.route("/plans/:appAcronym").get(isAuthenticatedUser, planController.getByAppAcronym);
