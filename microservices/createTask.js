@@ -29,60 +29,67 @@ module.exports.createTask = async function create(req, res, next) {
     }
 
     try {
-        const rNumber = await new Promise((resolve, reject) => {
+        var rNumber = await new Promise((resolve, reject) => {
             let sql = "SELECT App_rnumber FROM application WHERE App_Acronym = ?";
             connection.query(sql, [taskAppAcronym], (err, result) => {
                 if (err) reject(err);
                 resolve(result[0].App_rnumber);
             });
         });
+    } catch (err) {
+        console.log("failed to retrieve r number ", err);
+    }
 
-        const taskId = taskAppAcronym + "_" + rNumber;
+    const taskId = taskAppAcronym + "_" + rNumber;
 
-        // generate task state
-        const taskState = TASK_STATES.open;
-        // generate task creator
-        const taskCreator = username;
-        // generate task owner
-        const taskOwner = username;
+    // generate task state
+    const taskState = TASK_STATES.open;
+    // generate task creator
+    const taskCreator = username;
+    // generate task owner
+    const taskOwner = username;
 
-        const taskCreateDate = dayjs().format(DATETIME_FORMAT);
+    const taskCreateDate = dayjs().format(DATETIME_FORMAT);
 
-        // system generated task note
-        let taskNoteString = createNoteString("System", "open", `${taskOwner} has created the task.`);
+    // system generated task note
+    let taskNoteString = createNoteString("System", "open", `${taskOwner} has created the task.`);
 
-        // user generated note string
-        if (taskNote) {
-            taskNoteString += createNoteString(taskOwner, "open", taskNote);
-        }
-
-        const createdTask = await new Promise((resolve, reject) => {
-            const sql = `INSERT INTO task
+    // user generated note string
+    if (taskNote) {
+        taskNoteString += createNoteString(taskOwner, "open", taskNote);
+    }
+    // try {
+    var createdTask = await new Promise((resolve, reject) => {
+        const sql = `INSERT INTO task
         (Task_id, Task_name, Task_description, Task_plan, Task_app_acronym, Task_state, Task_creator, Task_owner, Task_createDate, Task_notes)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `;
-            connection.query(sql, [taskId, taskName, taskDescription, taskPlan, appAcronym, taskState, taskCreator, taskOwner, taskCreateDate, taskNoteString], (err, results) => {
-                if (err) reject(err);
-                resolve({
-                    taskId,
-                    taskName,
-                    taskDescription,
-                    taskPlan,
-                    appAcronym,
-                    taskState,
-                    taskCreator,
-                    taskOwner,
-                    taskCreateDate,
-                    taskNoteString,
-                });
+        console.log("i am ran");
+        connection.query(sql, [taskId, taskName, taskDescription, taskPlan, taskAppAcronym, taskState, taskCreator, taskOwner, taskCreateDate, taskNoteString], async (err, results) => {
+            if (err) reject(err);
+            resolve({
+                taskId,
+                taskName,
+                taskDescription,
+                taskPlan,
+                taskAppAcronym,
+                taskState,
+                taskCreator,
+                taskOwner,
+                taskCreateDate,
+                taskNoteString,
             });
         });
+    });
 
-        const incrementedRNumber = rNumber + 1;
-
+    var incrementedRNumber = rNumber + 1;
+    // } catch (err) {
+    //     console.log("failed to add task into task table", err);
+    // }
+    try {
         await new Promise((resolve, reject) => {
             const sql = "UPDATE application SET App_rnumber= ? WHERE App_Acronym = ?";
-            connection.query(sql, [incrementedRNumber, appAcronym], (err, results) => {
+            connection.query(sql, [incrementedRNumber, taskAppAcronym], (err, results) => {
                 if (err) reject(err);
                 resolve(results);
             });
@@ -92,6 +99,7 @@ module.exports.createTask = async function create(req, res, next) {
             success: true,
         });
     } catch (e) {
-        res.send({ success: false, message: e });
+        console.log(e);
+        // res.send({ success: false, message: e });
     }
 };
