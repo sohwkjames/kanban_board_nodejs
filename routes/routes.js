@@ -13,6 +13,10 @@ const { isAuthenticatedUser, authorizeUserGroups, authorizeAction } = require(".
 
 const { promoteTask2Done } = require("../microservices/promoteTask2Done");
 
+const { createTask } = require("../microservices/createTask");
+
+router.route("/createTask").post(createTask);
+
 // IAM endpoints
 router.route("/login").post(authController.login);
 router.route("/user").post(isAuthenticatedUser, authorizeUserGroups(["admin"]), userController.create);

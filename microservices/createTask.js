@@ -1,8 +1,17 @@
-module.exports.createTask = async function create(req, res, next) {
-    const { taskName, taskDescription, taskPlan, appAcronym, taskNote } = req.body;
+const jwt = require("jsonwebtoken");
+const mysql = require("mysql");
+const { isValidPassword } = require("../utils/auth");
+const { config } = require("../utils/dbConfig");
+const { getRNumber, incrementRNumber } = require("../controllers/applicationController");
+const { checkUserCanPerformAction } = require("../controllers/authController");
+const { TASK_STATES, TASK_RANKS, ACTION_PERMISSION_COLUMNS } = require("../constants/taskState");
+const { createNoteString, noteStringToArr } = require("../utils/notes");
+const dayjs = require("dayjs");
+const { DATETIME_FORMAT } = require("../constants/timeFormat");
+const { generateMailOptions, transporter } = require("../utils/email");
 
-    const username = req.header.username;
-    const password = req.header.password;
+module.exports.createTask = async function create(req, res, next) {
+    const { username, password, taskAppAcronym, taskName, taskPlan, taskNote, taskDescription } = req.body;
 
     if (!username || !password) {
         res.status(200).json({
@@ -10,7 +19,7 @@ module.exports.createTask = async function create(req, res, next) {
         });
     }
 
-    const isValidPermissions = await checkUserCanPerformAction(appAcronym, username, "App_permit_create");
+    const isValidPermissions = await checkUserCanPerformAction(taskAppAcronym, username, "App_permit_create");
 
     if (!isValidPermissions) {
         return res.send({
@@ -22,20 +31,20 @@ module.exports.createTask = async function create(req, res, next) {
     try {
         const rNumber = await new Promise((resolve, reject) => {
             let sql = "SELECT App_rnumber FROM application WHERE App_Acronym = ?";
-            connection.query(sql, [appAcronym], (err, result) => {
+            connection.query(sql, [taskAppAcronym], (err, result) => {
                 if (err) reject(err);
                 resolve(result[0].App_rnumber);
             });
         });
 
-        const taskId = appAcronym + "_" + rNumber;
+        const taskId = taskAppAcronym + "_" + rNumber;
 
         // generate task state
         const taskState = TASK_STATES.open;
         // generate task creator
-        const taskCreator = req.user.username;
+        const taskCreator = username;
         // generate task owner
-        const taskOwner = req.user.username;
+        const taskOwner = username;
 
         const taskCreateDate = dayjs().format(DATETIME_FORMAT);
 

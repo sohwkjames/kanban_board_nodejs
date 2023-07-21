@@ -48,6 +48,7 @@ async function login(req, res, next) {
             },
             process.env.JWT_SECRET
         );
+        console.log("token", token);
 
         // Send token to FE in response
         res.status(200).send({
@@ -162,6 +163,7 @@ async function checkUserCanPerformActionEndpoint(req, res, next) {
 
 // Returns true or false
 async function checkUserCanPerformAction(appAcronym, username, actionName) {
+    console.log("appAcronym", appAcronym);
     // Get the appname permissions
     const app = await new Promise((resolve, reject) => {
         const sql = "SELECT * FROM application WHERE App_acronym = ?";
@@ -169,8 +171,9 @@ async function checkUserCanPerformAction(appAcronym, username, actionName) {
             resolve(result[0]);
         });
     });
-
+    console.log("app", app);
     const permittedGroup = app[actionName];
+
     const result = await CheckGroup(username, permittedGroup);
 
     return result;
