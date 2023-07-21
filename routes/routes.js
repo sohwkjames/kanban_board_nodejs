@@ -11,6 +11,8 @@ const notesController = require("../controllers/notesController");
 
 const { isAuthenticatedUser, authorizeUserGroups, authorizeAction } = require("../middleware/authMiddleware");
 
+const { promoteTask2Done } = require("../microservices/promoteTask2Done");
+
 // IAM endpoints
 router.route("/login").post(authController.login);
 router.route("/user").post(isAuthenticatedUser, authorizeUserGroups(["admin"]), userController.create);
@@ -66,31 +68,37 @@ router.route("/plans").post(
 router.route("/plans").get(isAuthenticatedUser, planController.getAll);
 router.route("/plans/:appAcronym").get(isAuthenticatedUser, planController.getByAppAcronym);
 
-router.route("/tasks").post(isAuthenticatedUser, taskController.create);
+// router.route("/tasks").post(isAuthenticatedUser, taskController.create);
 
-router.route("/task/:taskId").get(isAuthenticatedUser, taskController.getTask);
-router.route("/tasks").put(isAuthenticatedUser, taskController.editTask);
+// router.route("/task/:taskId").get(isAuthenticatedUser, taskController.getTask);
+// router.route("/tasks").put(isAuthenticatedUser, taskController.editTask);
 
-router.route("/task/promote").post(isAuthenticatedUser, taskController.editAndPromoteTask);
+// router
+//   .route("/task/promote")
+//   .post(isAuthenticatedUser, taskController.editAndPromoteTask);
 
-router.route("/task/demote").post(isAuthenticatedUser, taskController.editAndDemoteTask);
+// router
+//   .route("/task/demote")
+//   .post(isAuthenticatedUser, taskController.editAndDemoteTask);
 
-router.route("/tasks-by-app").post(
-    isAuthenticatedUser,
-    // authorizeAction("App_permit_create"),
-    taskController.getTaskByApp
-);
+// router.route("/tasks-by-app").post(
+//   isAuthenticatedUser,
+//   // authorizeAction("App_permit_create"),
+//   taskController.getTaskByApp
+// );
 
-router.route("/notes").post(
-    isAuthenticatedUser,
-    // authorizeAction("App_permit_create"),
-    notesController.addNotes
-);
+// router.route("/notes").post(
+//   isAuthenticatedUser,
+//   // authorizeAction("App_permit_create"),
+//   notesController.addNotes
+// );
 
-router.route("/tasks-by-plan").post(
-    isAuthenticatedUser,
-    // authorizeAction("App_permit_create"),
-    taskController.getTaskByPlan
-);
+// router.route("/tasks-by-plan").post(
+//   isAuthenticatedUser,
+//   // authorizeAction("App_permit_create"),
+//   taskController.getTaskByPlan
+// );
+
+router.route("/promoteTask2Done").patch(promoteTask2Done);
 
 module.exports = router;
