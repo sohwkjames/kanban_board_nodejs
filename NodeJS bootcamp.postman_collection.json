@@ -1,0 +1,984 @@
+{
+	"info": {
+		"_postman_id": "0d6b16ff-4294-45d8-b784-4fe8b592ab7c",
+		"name": "NodeJS bootcamp",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "27946674"
+	},
+	"item": [
+		{
+			"name": "Identity access management",
+			"item": [
+				{
+					"name": "project lead sign in",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.environment.set(\"token\", pm.response.json().token)"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"username\": \"pl1\",\r\n    \"password\": \"p@ssw0rd\"\r\n}"
+						},
+						"url": {
+							"raw": "http://localhost:3001/login",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3001",
+							"path": [
+								"login"
+							]
+						},
+						"description": "Sends login request, receives jwt token in cookie."
+					},
+					"response": []
+				},
+				{
+					"name": "project manager sign in",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.environment.set(\"token\", pm.response.json().token)"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"username\": \"pm1\",\r\n    \"password\": \"p@ssw0rd\"\r\n}"
+						},
+						"url": {
+							"raw": "http://localhost:3001/login",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3001",
+							"path": [
+								"login"
+							]
+						},
+						"description": "Sends login request, receives jwt token in cookie."
+					},
+					"response": []
+				},
+				{
+					"name": "Admin sign in",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.environment.set(\"token\", pm.response.json().token)"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"username\": \"admin\",\r\n    \"password\": \"admin\"\r\n}"
+						},
+						"url": {
+							"raw": "http://localhost:3001/login",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3001",
+							"path": [
+								"login"
+							]
+						},
+						"description": "Sends login request, receives jwt token in cookie."
+					},
+					"response": []
+				},
+				{
+					"name": "User sign in",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.environment.set(\"token\", pm.response.json().token)"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"username\": \"st123\",\r\n    \"password\": \"p@ssw0rd\"\r\n}"
+						},
+						"url": {
+							"raw": "http://localhost:3001/login",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3001",
+							"path": [
+								"login"
+							]
+						},
+						"description": "Sends login request, receives jwt token in cookie."
+					},
+					"response": []
+				},
+				{
+					"name": "[Admin] create new user (active, \"user\" group)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer token {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"username\": \"st9\",\r\n    \"password\": \"p@ssw0rd\",\r\n    \"email\": \"test2@email.com\",\r\n    \"isActive\": 1,\r\n    \"userGroups\": [\"user\", \"group1\"]\r\n}"
+						},
+						"url": {
+							"raw": "http://localhost:3001/user",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3001",
+							"path": [
+								"user"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "[Admin[ check user group",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer token {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"groupname\": \"user\"\r\n}"
+						},
+						"url": {
+							"raw": "http://localhost:3001/checkusergroup",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3001",
+							"path": [
+								"checkusergroup"
+							]
+						},
+						"description": "Sends login request, receives jwt token in cookie."
+					},
+					"response": []
+				},
+				{
+					"name": "[Admin] getAllUserGroups",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer token {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "http://localhost:3001/usergroups",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3001",
+							"path": [
+								"usergroups"
+							]
+						},
+						"description": "Sends login request, receives jwt token in cookie."
+					},
+					"response": []
+				},
+				{
+					"name": "[Admin] get all users",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer token {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "http://localhost:3001/users",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3001",
+							"path": [
+								"users"
+							]
+						},
+						"description": "Sends login request, receives jwt token in cookie."
+					},
+					"response": []
+				},
+				{
+					"name": "[Admin] update user",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer token {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n   \"username\": \"admin\",\r\n   \"email\": \"test2@email.com\",\r\n   \"isActive\": 1,\r\n   \"userGroups\" : [\"user\"]\r\n}"
+						},
+						"url": {
+							"raw": "http://localhost:3001/user",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3001",
+							"path": [
+								"user"
+							]
+						},
+						"description": "Sends login request, receives jwt token in cookie."
+					},
+					"response": []
+				},
+				{
+					"name": "[Admin] Add user group",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer token {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"groupName\": \"testpostman1\"\r\n}"
+						},
+						"url": {
+							"raw": "http://localhost:3001/usergroups",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3001",
+							"path": [
+								"usergroups"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "get current user details",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer token {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:3001/user",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3001",
+							"path": [
+								"user"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "get current user details Copy",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer token {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:3001/user",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3001",
+							"path": [
+								"user"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "[debug] get user groups",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.environment.set(\"token\", pm.response.json().token)"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer token {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "http://localhost:3001/debug",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3001",
+							"path": [
+								"debug"
+							]
+						},
+						"description": "Sends login request, receives jwt token in cookie."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Task Management System",
+			"item": [
+				{
+					"name": "[PM] Create application",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer token {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"appAcronym\": \"NormalApp\",\r\n    \"appRnumber\": 100,\r\n    \"appDescription\": \"This app has default settings\",\r\n    \"appStartdate\": \"2023-7-11\",\r\n    \"appEnddate\": \"2023-9-21\",\r\n    \"appPermitCreate\": \"projectLead\",\r\n    \"appPermitOpen\": \"projectManager\",\r\n    \"appPermitTodolist\": \"devTeam\",\r\n    \"appPermitDoing\": \"devTeam\",\r\n    \"appPermitDone\": \"projectLead\"\r\n}"
+						},
+						"url": {
+							"raw": "http://localhost:3001/applications",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3001",
+							"path": [
+								"applications"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "[PM] Get applications",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer token {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "http://localhost:3001/applications",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3001",
+							"path": [
+								"applications"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "[PM] Get single application",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer token {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"groupName\": \"testpostman1\"\r\n}"
+						},
+						"url": {
+							"raw": "http://localhost:3001/applications/app2",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3001",
+							"path": [
+								"applications",
+								"app2"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "[PM] Create Plan",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer token {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"planMvpName\": \"Normal app phase 1\",\r\n    \"appAcronym\": \"NormalApp\",\r\n    \"planStartdate\": \"2023-5-11\",\r\n    \"planEnddate\": \"2025-8-1\"\r\n}"
+						},
+						"url": {
+							"raw": "http://localhost:3001/plans",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3001",
+							"path": [
+								"plans"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "View all plans",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer token {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"planMvpName\": \"jamesPlan1\",\r\n    \"planAppAcronym\": \"app2\",\r\n    \"planStartdate\": \"2023-7-21\",\r\n    \"planEnddate\": \"2023-9-2\"\r\n}"
+						},
+						"url": {
+							"raw": "http://localhost:3001/plans",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3001",
+							"path": [
+								"plans"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "View plan by app acronym",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer token {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"appAcronym\": \"facebook\"\r\n}"
+						},
+						"url": {
+							"raw": "http://localhost:3001/plan",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3001",
+							"path": [
+								"plan"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "[PL] Create Task",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer token {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"taskName\": \"Complete the feature\",\r\n    \"taskAppAcronym\": \"app3\",\r\n    \"appAcronym\": \"facebook\"\r\n\r\n}"
+						},
+						"url": {
+							"raw": "http://localhost:3001/tasks",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3001",
+							"path": [
+								"tasks"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "[PL] Create Task Copy",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer token {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"taskName\": \"thrd task\",\r\n    \"taskAppAcronym\": \"app3\",\r\n    \"taskNotes\": [\r\n        { \"username\": \"lee\",\r\n            \"message\": \"This is the second message\",\r\n           \"timestamp\": \"23-5-13\",\r\n           \"taskState\": \"open\" \r\n\r\n        }, { \"username\": \"james\",\r\n            \"message\": \"This is the first message\",\r\n           \"timestamp\": \"23-5-12\",\r\n           \"taskState\": \"open\" \r\n\r\n        }\r\n        ]\r\n}"
+						},
+						"url": {
+							"raw": "http://localhost:3001/tasks",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3001",
+							"path": [
+								"tasks"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Task By App",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer token {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"taskName\": \"facebook\",\r\n\r\n}"
+						},
+						"url": {
+							"raw": "http://localhost:3001/tasks-by-app",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3001",
+							"path": [
+								"tasks-by-app"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Task By Plan",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer token {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"taskName\": \"facebook\",\r\n    \"planName\": \"Breaking plan\"\r\n\r\n}"
+						},
+						"url": {
+							"raw": "http://localhost:3001/tasks-by-plan",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3001",
+							"path": [
+								"tasks-by-plan"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Edit Task",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer token {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"taskName\": \"test task 1\",\r\n    \"taskDescription\": \"This is the updated task description..\",\r\n    \"taskPlan\": \"Normal app phase 1\",\r\n    \"taskId\": \"NormalApp_100\"\r\n}"
+						},
+						"url": {
+							"raw": "http://localhost:3001/tasks",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3001",
+							"path": [
+								"tasks"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Promote Task",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer token {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"taskId\": \"NormalApp_100\"\r\n}"
+						},
+						"url": {
+							"raw": "http://localhost:3001/task/promote",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3001",
+							"path": [
+								"task",
+								"promote"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}
