@@ -6,7 +6,7 @@ module.exports.createTask = async function create(req, res, next) {
 
     if (!username || !password) {
         res.status(200).json({
-            cocde: "username or password is empty", //TODO change to code
+            code: "username or password is empty", //TODO change to code
         });
     }
 
