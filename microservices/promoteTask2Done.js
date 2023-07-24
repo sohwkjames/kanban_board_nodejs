@@ -1,7 +1,6 @@
 const bcrypt = require("bcryptjs");
 const { config } = require("../utils/dbConfig");
 const mysql = require("mysql");
-const { connect } = require("../routes/routes");
 const dayjs = require("dayjs");
 const nodemailer = require("nodemailer");
 
