@@ -25,6 +25,16 @@ async function getTaskByTaskState(req, res, next) {
         });
     }
 
+    //Check for unexpected fields in the request body 
+    if(req.body.appAcronym) var expectedFields = ['username', 'password', 'state', 'appAcronym'];
+    else var expectedFields = ['username', 'password', 'state'];
+    const unexpectedFields = Object.keys(req.body).filter((field) => !expectedFields.includes(field));
+    if (unexpectedFields.length > 0) {
+        return res.status(200).send({
+            code: "E013",
+        });
+    }
+
     //check if user is in db
     try {
         const user = await getCompleteUser(req.body.username);
