@@ -21,6 +21,15 @@ module.exports.createTask = async function create(req, res, next) {
         });
     }
 
+    const expectedFields = ["username", "password", "taskAppAcronym", "taskName", "taskPlan", "taskNote", "taskDescription"];
+    const receivedFields = Object.keys(req.body);
+
+    const hasExtraFields = receivedFields.some((field) => !expectedFields.includes(field));
+
+    if (hasExtraFields) {
+        return res.status(200).send({ code: "E013" });
+    }
+
     console.log("create task");
     // for username and password validation
     if (!username || !password || password === "") {
