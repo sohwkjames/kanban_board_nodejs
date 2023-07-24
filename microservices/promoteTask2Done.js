@@ -208,11 +208,11 @@ async function promoteTask2Done(req, res, next) {
       });
     });
   } catch (e) {
-    return res.status(200).send({ taskId, code: "S001" });
+    return res.status(200).send({ taskId: taskId.toLowerCase(), code: "S001" });
   }
 
   return res.status(200).send({
-    taskId,
+    taskId: taskId.toLowerCase(),
     code: "S001",
   });
 }
