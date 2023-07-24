@@ -9,22 +9,6 @@ dotenv.config({ path: "./config/config.env" });
 app.use(express.json({ limit: "25mb" }));
 app.use(cors());
 
-app.use(function (req, res, next) {
-  var err = null;
-  try {
-    decodeURIComponent(req.path);
-  } catch (e) {
-    err = e;
-  }
-  if (err) {
-    console.log(err, req.url);
-    return res.send({
-      code: "Invalid url",
-    });
-  }
-  next();
-});
-
 // app.use(function (req, res, next) {
 //   res.header("Access-Control-Allow-Origin", "http://localhost:3000*");
 //   res.header(
@@ -34,20 +18,19 @@ app.use(function (req, res, next) {
 //   next();
 // });
 app.use((err, req, res, next) => {
-  if (err instanceof SyntaxError && err.status === 400 && 'body' in err) {
-    res.status(400).json({ error: 'Invalid JSON' });
-  } else {
-    next();
-  }
+    if (err instanceof SyntaxError && err.status === 400 && "body" in err) {
+        res.status(400).json({ error: "E013" });
+    } else {
+        next();
+    }
 });
 const authRoutes = require("./routes/routes");
 app.use(authRoutes);
 app.use((req, res, next) => {
-  res.status(200).send({
-    code:"invalid route"
-  })
-})
-
+    res.status(200).send({
+        code: "E007",
+    });
+});
 
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
