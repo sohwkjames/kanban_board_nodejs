@@ -69,9 +69,7 @@ router.route("/plans/:appAcronym").get(isAuthenticatedUser, planController.getBy
 // router.route("/task/:taskId").get(isAuthenticatedUser, taskController.getTask);
 // router.route("/tasks").put(isAuthenticatedUser, taskController.editTask);
 
-// router
-//   .route("/task/promote")
-//   .post(isAuthenticatedUser, taskController.editAndPromoteTask);
+router.route("/task/promote").post(isAuthenticatedUser, taskController.editAndPromoteTask);
 
 // router
 //   .route("/task/demote")

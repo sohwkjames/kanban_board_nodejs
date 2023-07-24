@@ -1,9 +1,9 @@
 {
 	"info": {
-		"_postman_id": "0d6b16ff-4294-45d8-b784-4fe8b592ab7c",
+		"_postman_id": "cdf8203d-ced8-4eab-9d83-99ac4699404a",
 		"name": "NodeJS bootcamp",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "27946674"
+		"_exporter_id": "27872883"
 	},
 	"item": [
 		{
@@ -115,7 +115,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"username\": \"admin\",\r\n    \"password\": \"admin\"\r\n}"
+							"raw": "{\r\n    \"username\": \"admin\",\r\n    \"password\": \"p@ssword1\"\r\n}"
 						},
 						"url": {
 							"raw": "http://localhost:3001/login",
@@ -202,7 +202,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"username\": \"st9\",\r\n    \"password\": \"p@ssw0rd\",\r\n    \"email\": \"test2@email.com\",\r\n    \"isActive\": 1,\r\n    \"userGroups\": [\"user\", \"group1\"]\r\n}"
+							"raw": "{\r\n    \"username\": \"dev2\",\r\n    \"password\": \"p@ssword1\",\r\n    \"email\": \"zephyrtmh@gmail.com\",\r\n    \"isActive\": 1,\r\n    \"userGroups\": [\"admin\"]\r\n}"
 						},
 						"url": {
 							"raw": "http://localhost:3001/user",
@@ -391,7 +391,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n   \"username\": \"admin\",\r\n   \"email\": \"test2@email.com\",\r\n   \"isActive\": 1,\r\n   \"userGroups\" : [\"user\"]\r\n}"
+							"raw": "{\r\n   \"username\": \"admin\",\r\n   \"email\": \"test2@email.com\",\r\n   \"isActive\": 1,\r\n   \"userGroups\" : [\"project manager\", \"project lead\", \"team member\", \"admin\"]\r\n}"
 						},
 						"url": {
 							"raw": "http://localhost:3001/user",
@@ -683,7 +683,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"planMvpName\": \"Normal app phase 1\",\r\n    \"appAcronym\": \"NormalApp\",\r\n    \"planStartdate\": \"2023-5-11\",\r\n    \"planEnddate\": \"2025-8-1\"\r\n}"
+							"raw": "{\r\n    \"user\": {\r\n        \"username\": \"admin\"\r\n    },\r\n    \"planMvpName\": \"Normal app phase 1\",\r\n    \"appAcronym\": \"app1\",\r\n    \"planStartdate\": \"2023-5-11\",\r\n    \"planEnddate\": \"2025-8-1\"\r\n}"
 						},
 						"url": {
 							"raw": "http://localhost:3001/plans",
@@ -808,7 +808,7 @@
 					"response": []
 				},
 				{
-					"name": "[PL] Create Task Copy",
+					"name": "[PL] Create Task (Assignment 3)",
 					"request": {
 						"method": "POST",
 						"header": [
@@ -825,17 +825,90 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"taskName\": \"thrd task\",\r\n    \"taskAppAcronym\": \"app3\",\r\n    \"taskNotes\": [\r\n        { \"username\": \"lee\",\r\n            \"message\": \"This is the second message\",\r\n           \"timestamp\": \"23-5-13\",\r\n           \"taskState\": \"open\" \r\n\r\n        }, { \"username\": \"james\",\r\n            \"message\": \"This is the first message\",\r\n           \"timestamp\": \"23-5-12\",\r\n           \"taskState\": \"open\" \r\n\r\n        }\r\n        ]\r\n}"
+							"raw": "{\r\n    \"username\": \"admin\",\r\n    \"password\": \"p@ssword1\",\r\n    \"taskAppAcronym\": \"app1\",\r\n    \"taskName\": \"Complete the feature\",\r\n    // \"taskPlan\": \"Normal app phase 1\",\r\n    \"taskNote\": \"something\",\r\n    \"taskDescription\": \"\"\r\n}"
 						},
 						"url": {
-							"raw": "http://localhost:3001/tasks",
+							"raw": "http://localhost:3001/createTask",
 							"protocol": "http",
 							"host": [
 								"localhost"
 							],
 							"port": "3001",
 							"path": [
-								"tasks"
+								"createTask"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "[PL] getTaskByState",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer token {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"username\": \"admin\",\r\n    \"password\": \"p@ssword1\",\r\n    \"state\": \"open\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:3001/getTaskByState",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3001",
+							"path": [
+								"getTaskByState"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "[PL] Promote Task 2 Done (Assignment 3) Copy 2",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer token {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"username\": \"admin\",\r\n    \"password\": \"p@ssword1\",\r\n    \"taskId\": \"app1_125\",\r\n    \"taskNote\": \"||**\",\r\n    \"appAcronym\": \"app1\"\r\n}"
+						},
+						"url": {
+							"raw": "http://localhost:3001/promoteTask2Done",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3001",
+							"path": [
+								"promoteTask2Done"
 							]
 						}
 					},
