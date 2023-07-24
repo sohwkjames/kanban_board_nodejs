@@ -18,14 +18,14 @@ module.exports.createTask = async function create(req, res, next) {
     // for username and password validation
     if (!username || !password || password === "") {
         return res.status(200).json({
-            code: "username or password is empty",
+            code: "E004",
         });
     }
     try {
         var user = await getCompleteUser(username);
     } catch (err) {
         return res.status(200).json({
-            code: "user does not exist",
+            code: "E004",
         });
     }
 
@@ -33,27 +33,27 @@ module.exports.createTask = async function create(req, res, next) {
 
     if (!isValidCredentials) {
         return res.status(200).json({
-            code: "password is incorrect",
+            code: "E004",
         });
     }
 
     //check if user is suspended
     if (user[0].isActive == 0) {
         return res.status(200).json({
-            code: "user suspended",
+            code: "E001",
         });
     }
 
     //check if taskname is valid
     if (!taskName || taskName === "") {
         return res.status(200).json({
-            code: "taskName is empty",
+            code: "E003",
         });
     }
 
     if (!taskAppAcronym || taskAppAcronym === "") {
         return res.status(200).json({
-            code: "taskAppAcronym is empty",
+            code: "E003",
         });
     }
     console.log(taskPlan);
@@ -61,7 +61,7 @@ module.exports.createTask = async function create(req, res, next) {
         var plan = await new Promise((resolve, reject) => {
             const sql = `SELECT COUNT('Plan_mvp_name') AS count FROM plan WHERE Plan_mvp_name = ?`;
             connection.query(sql, [taskPlan], async (err, results) => {
-                if (err) reject(err);
+                if (err) reject("E011");
 
                 resolve({
                     results,
@@ -71,7 +71,7 @@ module.exports.createTask = async function create(req, res, next) {
 
         if (plan.results[0].count === 0) {
             return res.status(200).json({
-                code: "Plan provided does not exist",
+                code: "E006",
             });
         }
     }
@@ -81,13 +81,13 @@ module.exports.createTask = async function create(req, res, next) {
         const isValidPermissions = await checkUserCanPerformAction(taskAppAcronym, username, "App_permit_create");
 
         if (!isValidPermissions) {
-            return res.send({
-                code: "You do not have permission to access this resource.",
+            return res.status(200).send({
+                code: "E002",
             });
         }
     } catch (err) {
-        return res.send({
-            code: "Incorret app acronym",
+        return res.status(200).send({
+            code: "E005",
         });
     }
 
@@ -100,14 +100,16 @@ module.exports.createTask = async function create(req, res, next) {
             });
         });
     } catch (err) {
-        console.log("failed to retrieve r number ", err);
+        return res.status(200).send({
+            code: "E011",
+        });
     }
 
     //validate for task notes
     if (taskNote && taskNote != "") {
         if (taskNote.includes("**") || taskNote.includes("||")) {
             return res.status(200).json({
-                code: "Task note cannot contain ** or ||",
+                code: "E012",
             });
         }
     }
@@ -156,7 +158,7 @@ module.exports.createTask = async function create(req, res, next) {
         });
     } catch (err) {
         return res.status(200).json({
-            code: "Created task failed to complete",
+            code: "E011",
         });
     }
 
@@ -165,17 +167,17 @@ module.exports.createTask = async function create(req, res, next) {
         await new Promise((resolve, reject) => {
             const sql = "UPDATE application SET App_rnumber= ? WHERE App_Acronym = ?";
             connection.query(sql, [incrementedRNumber, taskAppAcronym], (err, results) => {
-                if (err) reject(err);
+                if (err) reject(new Error("E011"));
                 resolve(results);
             });
         });
 
         res.send({
             taskId: taskId,
-            code: "success",
+            code: "S001",
         });
     } catch (e) {
-        console.log(e);
-        // res.send({ success: false, message: e });
+        console.log(e.message);
+        res.status(200).send({ code: e.message });
     }
 };
