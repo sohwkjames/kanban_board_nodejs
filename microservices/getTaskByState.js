@@ -26,7 +26,7 @@ async function getTaskByTaskState(req, res, next) {
     }
 
     //Check for unexpected fields in the request body 
-    if(req.body.appAcronym) var expectedFields = ['username', 'password', 'state', 'appAcronym'];
+    if(req.body.appAcronym || req.body.appAcronym == "") var expectedFields = ['username', 'password', 'state', 'appAcronym'];
     else var expectedFields = ['username', 'password', 'state'];
     const unexpectedFields = Object.keys(req.body).filter((field) => !expectedFields.includes(field));
     if (unexpectedFields.length > 0) {
