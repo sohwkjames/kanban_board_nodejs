@@ -14,6 +14,7 @@ const bcrypt = require("bcryptjs");
 
 module.exports.createTask = async function create(req, res, next) {
     const { username, password, taskAppAcronym, taskName, taskPlan, taskNote, taskDescription } = req.body;
+    console.log("create task");
     // for username and password validation
     if (!username || !password || password === "") {
         return res.status(200).json({
@@ -55,8 +56,8 @@ module.exports.createTask = async function create(req, res, next) {
             code: "taskAppAcronym is empty",
         });
     }
-
-    if (!plan || plan != "") {
+    console.log(taskPlan);
+    if (taskPlan && taskPlan != "") {
         var plan = await new Promise((resolve, reject) => {
             const sql = `SELECT COUNT('Plan_mvp_name') AS count FROM plan WHERE Plan_mvp_name = ?`;
             connection.query(sql, [taskPlan], async (err, results) => {
@@ -103,7 +104,7 @@ module.exports.createTask = async function create(req, res, next) {
     }
 
     //validate for task notes
-    if (!taskNote || taskNote != "") {
+    if (taskNote && taskNote != "") {
         if (taskNote.includes("**") || taskNote.includes("||")) {
             return res.status(200).json({
                 code: "Task note cannot contain ** or ||",

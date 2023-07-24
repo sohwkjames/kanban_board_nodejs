@@ -10,6 +10,7 @@ const planController = require("../controllers/planController");
 const notesController = require("../controllers/notesController");
 const getTaskByTaskStateC = require("../microservices/getTaskByState");
 const { promoteTask2Done } = require("../microservices/promoteTask2Done");
+const { createTask } = require("../microservices/createTask");
 
 const { isAuthenticatedUser, authorizeUserGroups, authorizeAction } = require("../middleware/authMiddleware");
 
@@ -97,5 +98,7 @@ router.route("/plans/:appAcronym").get(isAuthenticatedUser, planController.getBy
 router.route("/promoteTask2Done").patch(promoteTask2Done);
 
 router.route("/getTaskByState").post(getTaskByTaskStateC.getTaskByTaskState);
+
+router.route("/createTask").post(createTask);
 
 module.exports = router;
