@@ -21,7 +21,7 @@ async function promoteTask2Done(req, res, next) {
 
   if (!username || !password || !taskId || !appAcronym) {
     return res.status(200).send({
-      code: "Mandatory parameters are missing",
+      code: "E003",
     });
   }
 
@@ -39,7 +39,7 @@ async function promoteTask2Done(req, res, next) {
 
   if (!user) {
     return res.status(200).send({
-      code: "Invalid credential",
+      code: "E004",
     });
   }
 
@@ -47,13 +47,13 @@ async function promoteTask2Done(req, res, next) {
 
   if (!validPassword) {
     return res.status(200).send({
-      code: "Invalid credential",
+      code: "E004",
     });
   }
 
   if (user.isActive === 0) {
     return res.status(200).send({
-      code: "Inactive user",
+      code: "E001",
     });
   }
 
@@ -81,7 +81,7 @@ async function promoteTask2Done(req, res, next) {
 
   if (!isAppValid) {
     return res.status(200).send({
-      code: "Invalid app acronym",
+      code: "E005",
     });
   }
 
@@ -96,7 +96,7 @@ async function promoteTask2Done(req, res, next) {
   // Compare userGroupsArr vs application app_premit_doing group
   if (!userGroupsArr.includes(appObject.App_permit_doing)) {
     return res.status(200).send({
-      code: "You do not have permission to perform this action",
+      code: "E002",
     });
   }
 
@@ -110,14 +110,22 @@ async function promoteTask2Done(req, res, next) {
 
   if (!taskObj) {
     return res.status(200).send({
-      code: "Invalid task id",
+      code: "E009",
     });
   }
 
   if (taskObj.Task_state !== "doing") {
     return res.status(200).send({
-      code: "Task is not at doing state",
+      code: "E010",
     });
+  }
+
+  if (taskNote && taskNote !== "") {
+    if (taskNote.includes("**") || taskNote.includes("||")) {
+      return res.status(200).json({
+        code: "E012",
+      });
+    }
   }
 
   // System generated note string
@@ -172,12 +180,12 @@ async function promoteTask2Done(req, res, next) {
       });
     });
   } catch (e) {
-    return res.status(200).send({ code: "Failed to send email" });
+    return res.status(200).send({ taskId, code: "S001" });
   }
 
   return res.status(200).send({
     taskId,
-    code: "Successfully promoted task to done",
+    code: "S001",
   });
 }
 
