@@ -161,7 +161,7 @@ async function promoteTask2Done(req, res, next) {
 
   try {
     // sendEmailNotification(emailsArr, taskId);
-    const mailOptions = generateMailOptions(emailString, taskId);
+    const mailOptions = generateMailOptions(emailsArr, taskId);
 
     const result = await new Promise((resolve, reject) => {
       transporter.sendMail(mailOptions, (err, info) => {
