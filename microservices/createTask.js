@@ -18,7 +18,19 @@ module.exports.createTask = async function create(req, res, next) {
     // for username and password validation
     if (!username || !password || password === "") {
         return res.status(200).json({
-            code: "E004",
+            code: "E003",
+        });
+    }
+    //check if taskname is valid
+    if (!taskName || taskName === "") {
+        return res.status(200).json({
+            code: "E003",
+        });
+    }
+
+    if (!taskAppAcronym || taskAppAcronym === "") {
+        return res.status(200).json({
+            code: "E003",
         });
     }
     try {
@@ -44,18 +56,6 @@ module.exports.createTask = async function create(req, res, next) {
         });
     }
 
-    //check if taskname is valid
-    if (!taskName || taskName === "") {
-        return res.status(200).json({
-            code: "E003",
-        });
-    }
-
-    if (!taskAppAcronym || taskAppAcronym === "") {
-        return res.status(200).json({
-            code: "E003",
-        });
-    }
     console.log(taskPlan);
     if (taskPlan && taskPlan != "") {
         var plan = await new Promise((resolve, reject) => {
