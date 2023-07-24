@@ -10,29 +10,18 @@ const { config } = require("../utils/dbConfig");
 connection = mysql.createConnection(config);
 
 async function getTaskByTaskState(req, res, next) {
-    console.log(req.body);
-    // //check json body
-    // try{
-    //     console.log(JSON.parse(req.body));
-    //     // JSON.parse(req.body);
-    // }catch(e){
-    //     console.log(e)
-    //     return res.status(200).send({
-    //         code:"invalid JSON body"
-    //     })
-    // }
 
     //Get values from json body
     if (!req.body.username || !req.body.password || !req.body.state) {
         return res.status(200).send({
-            code: "mandatory values not filled",
+            code: "E003",
         });
     }
 
     //check for params
     if (Object.keys(req.query).length > 0) {
         return res.status(200).send({
-            code: "query params not allowed",
+            code: "E007",
         });
     }
 
@@ -42,20 +31,20 @@ async function getTaskByTaskState(req, res, next) {
         //Check if user is found
         if (!user) {
             return res.status(200).send({
-                code: "Invalid username or password",
+                code: "E004",
             });
         }
         //check if user is suspended
         if (user[0].isActive == 0) {
             return res.status(200).send({
-                code: "user suspended",
+                code: "E001",
             });
         }
         //check password
         const isValidCredentials = await bcrypt.compare(req.body.password, user[0].password);
         if (!isValidCredentials) {
             return res.status(200).send({
-                code: "Invalid username or password",
+                code: "E004",
             });
         }
 
@@ -63,12 +52,12 @@ async function getTaskByTaskState(req, res, next) {
         const stateArray = ["open", "todo", "doing", "done", "closed"];
         if (!stateArray.includes(String(req.body.state).toLowerCase())) {
             return res.status(200).send({
-                code: "Invalid state",
+                code: "E008",
             });
         }
     } catch (e) {
         return res.status(200).send({
-            code: "Invalid username or password",
+            code: "E004",
         });
     }
 
@@ -77,7 +66,26 @@ async function getTaskByTaskState(req, res, next) {
         const sql = `SELECT Task_id, Task_name, Task_description, Task_notes, Task_plan, Task_app_acronym, Task_state, Task_creator, Task_owner, Task_createDate, Plan_colour FROM task 
         LEFT JOIN plan ON task.Task_plan = plan.Plan_mvp_name 
         WHERE task.Task_app_acronym = ? AND task.Task_state=?`;
+        const checkAppSql = `SELECT COUNT(App_Acronym) as count FROM application WHERE App_Acronym = ?;`
+    
         try {
+            //Check for app acronym
+            const appResult = await new Promise((resolve, reject) => {
+                connection.query(checkAppSql, [String(req.body.appAcronym).toLowerCase()], (err, result) => {
+                    if (err) reject(err);
+                    else {
+                        resolve(result);
+                    }
+                });
+            }); 
+
+            if(appResult[0].count < 1){
+                return res.status(200).send({
+                    code: "E005",
+                });
+            }
+
+            //Get task with app acronym
             const result = await new Promise((resolve, reject) => {
                 connection.query(sql, [String(req.body.appAcronym).toLowerCase(), String(req.body.state).toLowerCase()], (err, result) => {
                     if (err) reject(err);
@@ -89,16 +97,17 @@ async function getTaskByTaskState(req, res, next) {
 
             if (result.length <= 0) {
                 return res.status(200).send({
-                    code: "No tasks found",
+                    code: "S001",
+                    tasks: []
                 });
             }
             return res.status(200).send({
-                code: "Task found",
+                code: "S001",
                 tasks: result,
             });
         } catch (e) {
             return res.status(200).send({
-                code: "server error",
+                code: "E011",
             });
         }
     } else {
@@ -107,6 +116,7 @@ async function getTaskByTaskState(req, res, next) {
         WHERE task.Task_state=?`;
 
         try {
+            //Get task without app acronym
             const result = await new Promise((resolve, reject) => {
                 connection.query(sql, [req.body.state], (err, result) => {
                     if (err) reject(err);
@@ -118,16 +128,17 @@ async function getTaskByTaskState(req, res, next) {
 
             if (result.length <= 0) {
                 return res.status(200).send({
-                    code: "No tasks found",
+                    code: "S001",
+                    tasks: []
                 });
             }
             return res.status(200).send({
-                code: "Task found",
+                code: "S001",
                 tasks: result,
             });
         } catch (e) {
             return res.status(200).send({
-                code: "server error",
+                code: "E011",
             });
         }
     }
