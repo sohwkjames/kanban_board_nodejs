@@ -14,6 +14,13 @@ const bcrypt = require("bcryptjs");
 
 module.exports.createTask = async function create(req, res, next) {
     const { username, password, taskAppAcronym, taskName, taskPlan, taskNote, taskDescription } = req.body;
+
+    if (Object.keys(req.query).length > 0) {
+        return res.status(200).send({
+            code: "E007",
+        });
+    }
+
     console.log("create task");
     // for username and password validation
     if (!username || !password || password === "") {

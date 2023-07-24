@@ -19,7 +19,7 @@ app.use(cors());
 // });
 app.use((err, req, res, next) => {
     if (err instanceof SyntaxError && err.status === 400 && "body" in err) {
-        res.status(400).json({ error: "E013" });
+        res.status(200).json({ code: "E013" });
     } else {
         next();
     }
