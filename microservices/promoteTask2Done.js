@@ -159,7 +159,21 @@ async function promoteTask2Done(req, res, next) {
     });
   });
 
-  sendEmailNotification(emailsArr, taskId);
+  try {
+    // sendEmailNotification(emailsArr, taskId);
+    const mailOptions = generateMailOptions(emailString, taskId);
+
+    const result = await new Promise((resolve, reject) => {
+      transporter.sendMail(mailOptions, (err, info) => {
+        if (err) {
+          reject(err);
+        }
+        if (info) resolve(info);
+      });
+    });
+  } catch (e) {
+    return res.status(200).send({ code: "Failed to send email" });
+  }
 
   return res.status(200).send({
     taskId,
@@ -193,7 +207,9 @@ async function sendEmailNotification(emailString, taskId) {
 
   const result = await new Promise((resolve, reject) => {
     transporter.sendMail(mailOptions, (err, info) => {
-      if (err) reject(err);
+      if (err) {
+        reject(err);
+      }
       if (info) resolve(info);
     });
   });
