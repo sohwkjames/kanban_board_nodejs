@@ -21,6 +21,7 @@ const saltRounds = 10;
 
 async function login(req, res, next) {
     const { username, password } = req.body;
+    console.log("this is ran");
 
     try {
         const user = await getCompleteUser(username);
@@ -29,6 +30,7 @@ async function login(req, res, next) {
         console.log(password);
 
         const isValidCredentials = await bcrypt.compare(password, user[0].password);
+        console.log(password, user[0].password);
 
         if (!isValidCredentials) {
             return res.send({
@@ -57,8 +59,9 @@ async function login(req, res, next) {
             userGroups: user[0].userGroups,
             isActive: user[0].isActive,
         });
-    } catch {
+    } catch (err) {
         res.send({
+            err: err,
             success: false,
             message: "Invalid username or password",
         });
