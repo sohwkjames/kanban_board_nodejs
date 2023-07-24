@@ -36,6 +36,13 @@ module.exports.createTask = async function create(req, res, next) {
         });
     }
 
+    //check if user is suspended
+    if (user[0].isActive == 0) {
+        return res.status(200).json({
+            code: "user suspended",
+        });
+    }
+
     //check if taskname is valid
     if (!taskName || taskName === "") {
         return res.status(200).json({
@@ -95,6 +102,15 @@ module.exports.createTask = async function create(req, res, next) {
         console.log("failed to retrieve r number ", err);
     }
 
+    //validate for task notes
+    if (!taskNote || taskNote != "") {
+        if (taskNote.includes("**") || taskNote.includes("||")) {
+            return res.status(200).json({
+                code: "Task note cannot contain ** or ||",
+            });
+        }
+    }
+
     const taskId = taskAppAcronym + "_" + rNumber;
 
     // generate task state
@@ -113,28 +129,35 @@ module.exports.createTask = async function create(req, res, next) {
     if (taskNote) {
         taskNoteString += createNoteString(taskOwner, "open", taskNote);
     }
-    var createdTask = await new Promise((resolve, reject) => {
-        const sql = `INSERT INTO task
-        (Task_id, Task_name, Task_description, Task_plan, Task_app_acronym, Task_state, Task_creator, Task_owner, Task_createDate, Task_notes)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-      `;
-        console.log("i am ran");
-        connection.query(sql, [taskId, taskName, taskDescription, taskPlan, taskAppAcronym, taskState, taskCreator, taskOwner, taskCreateDate, taskNoteString], async (err, results) => {
-            if (err) reject(err);
-            resolve({
-                taskId,
-                taskName,
-                taskDescription,
-                taskPlan,
-                taskAppAcronym,
-                taskState,
-                taskCreator,
-                taskOwner,
-                taskCreateDate,
-                taskNoteString,
+
+    try {
+        var createdTask = await new Promise((resolve, reject) => {
+            const sql = `INSERT INTO task
+            (Task_id, Task_name, Task_description, Task_plan, Task_app_acronym, Task_state, Task_creator, Task_owner, Task_createDate, Task_notes)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+          `;
+            console.log("i am ran");
+            connection.query(sql, [taskId, taskName, taskDescription, taskPlan, taskAppAcronym, taskState, taskCreator, taskOwner, taskCreateDate, taskNoteString], async (err, results) => {
+                if (err) reject(err);
+                resolve({
+                    taskId,
+                    taskName,
+                    taskDescription,
+                    taskPlan,
+                    taskAppAcronym,
+                    taskState,
+                    taskCreator,
+                    taskOwner,
+                    taskCreateDate,
+                    taskNoteString,
+                });
             });
         });
-    });
+    } catch (err) {
+        return res.status(200).json({
+            code: "Created task failed to complete",
+        });
+    }
 
     var incrementedRNumber = rNumber + 1;
     try {
@@ -147,7 +170,8 @@ module.exports.createTask = async function create(req, res, next) {
         });
 
         res.send({
-            success: true,
+            taskId: taskId,
+            code: "success",
         });
     } catch (e) {
         console.log(e);
