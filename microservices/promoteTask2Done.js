@@ -32,6 +32,23 @@ async function promoteTask2Done(req, res, next) {
     });
   }
 
+  const expectedFields = [
+    "username",
+    "password",
+    "appAcronym",
+    "taskId",
+    "taskNote",
+  ];
+  const receivedFields = Object.keys(req.body);
+
+  const hasExtraFields = receivedFields.some(
+    (field) => !expectedFields.includes(field)
+  );
+
+  if (hasExtraFields) {
+    return res.status(200).send({ code: "E013" });
+  }
+
   const user = await new Promise((resolve, reject) => {
     const sql = `SELECT * FROM accounts WHERE username=?`;
     connection.query(sql, [username], (err, results) => {
