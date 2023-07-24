@@ -33,9 +33,21 @@ app.use(function (req, res, next) {
 //   );
 //   next();
 // });
-
+app.use((err, req, res, next) => {
+  if (err instanceof SyntaxError && err.status === 400 && 'body' in err) {
+    res.status(400).json({ error: 'Invalid JSON' });
+  } else {
+    next();
+  }
+});
 const authRoutes = require("./routes/routes");
 app.use(authRoutes);
+app.use((req, res, next) => {
+  res.status(200).send({
+    code:"invalid route"
+  })
+})
+
 
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {

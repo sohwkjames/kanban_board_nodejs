@@ -8,14 +8,13 @@ const applicationController = require("../controllers/applicationController");
 const taskController = require("../controllers/taskController");
 const planController = require("../controllers/planController");
 const notesController = require("../controllers/notesController");
+const getTaskByTaskStateC = require("../microservices/getTaskByState");
 
-const { isAuthenticatedUser, authorizeUserGroups, authorizeAction } = require("../middleware/authMiddleware");
-
-const { promoteTask2Done } = require("../microservices/promoteTask2Done");
-
-const { createTask } = require("../microservices/createTask");
-
-router.route("/createTask").post(createTask);
+const {
+  isAuthenticatedUser,
+  authorizeUserGroups,
+  authorizeAction,
+} = require("../middleware/authMiddleware");
 
 // IAM endpoints
 router.route("/login").post(authController.login);
@@ -62,12 +61,7 @@ router.route("/applications/earliest-end-date").post(isAuthenticatedUser, applic
 
 router.route("/applications/latest-end-date").post(isAuthenticatedUser, applicationController.getLatestEndDate);
 
-router.route("/plans").post(
-    isAuthenticatedUser,
-    authorizeAction("App_permit_open"),
-    // authorizeUserGroups(["projectManager"]),
-    planController.create
-);
+router.route("/plans").post(isAuthenticatedUser, authorizeAction("App_permit_open"), authorizeUserGroups(["projectManager"]), planController.create);
 
 router.route("/plans").get(isAuthenticatedUser, planController.getAll);
 router.route("/plans/:appAcronym").get(isAuthenticatedUser, planController.getByAppAcronym);
@@ -103,6 +97,8 @@ router.route("/plans/:appAcronym").get(isAuthenticatedUser, planController.getBy
 //   taskController.getTaskByPlan
 // );
 
-router.route("/promoteTask2Done").patch(promoteTask2Done);
+// router.route("/promoteTask2Done").patch(promoteTask2Done);
+
+router.route("/getTaskByState").post(getTaskByTaskStateC.getTaskByTaskState);
 
 module.exports = router;

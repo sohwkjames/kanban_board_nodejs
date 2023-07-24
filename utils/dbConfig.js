@@ -1,8 +1,8 @@
 const config = {
-    host: "localhost",
-    user: "root",
-    password: "root",
-    database: "a3",
+  host: "localhost",
+  user: "root",
+  password: "password",
+  database: "nodelogin2",
 };
 
 module.exports = { config };

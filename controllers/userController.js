@@ -203,8 +203,17 @@ async function updateUserProfile(req, res, next) {
 async function getCompleteUser(username) {
     // This method returns a complete user object with all the usergroups etc.
 
-    const user = await getUser(username);
-    const groups = await getUserGroups(username);
+    try {
+        var user = await getUser(username);
+    } catch (err) {
+        throw err;
+    }
+    try {
+        var groups = await getUserGroups(username);
+    } catch (err) {
+        throw err;
+    }
+
     user[0].userGroups = groups;
 
     return user;

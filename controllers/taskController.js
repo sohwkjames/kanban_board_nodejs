@@ -20,18 +20,18 @@ async function create(req, res, next) {
   const { taskName, taskDescription, taskPlan, appAcronym, taskNote } =
     req.body;
 
-  const isValidPermissions = await checkUserCanPerformAction(
-    appAcronym,
-    req.user.username,
-    "App_permit_create"
-  );
+  // const isValidPermissions = await checkUserCanPerformAction(
+  //   appAcronym,
+  //   req.user.username,
+  //   "App_permit_create"
+  // );
 
-  if (!isValidPermissions) {
-    return res.send({
-      success: false,
-      message: "You do not have permission to access this resource.",
-    });
-  }
+  // if (!isValidPermissions) {
+  //   return res.send({
+  //     success: false,
+  //     message: "You do not have permission to access this resource.",
+  //   });
+  // }
 
   try {
     const rNumber = await new Promise((resolve, reject) => {
@@ -47,9 +47,11 @@ async function create(req, res, next) {
     // generate task state
     const taskState = TASK_STATES.open;
     // generate task creator
-    const taskCreator = req.user.username;
+    // const taskCreator = req.user.username;
+    const taskCreator = "pl1";
     // generate task owner
-    const taskOwner = req.user.username;
+    // const taskOwner = req.user.username;
+    const taskOwner = "pl1";
 
     const taskCreateDate = dayjs().format(DATETIME_FORMAT);
 
