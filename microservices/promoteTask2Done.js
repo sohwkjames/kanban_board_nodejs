@@ -148,11 +148,15 @@ async function promoteTask2Done(req, res, next) {
 
   const newTaskObj = await new Promise((resolve, reject) => {
     const sql =
-      "UPDATE task SET Task_state=?, Task_notes=CONCAT(Task_notes,?) WHERE Task_id=?";
-    connection.query(sql, ["done", taskNoteString, taskId], (err, results) => {
-      if (err) reject(err);
-      resolve(results[0]);
-    });
+      "UPDATE task SET Task_state=?, Task_notes=CONCAT(Task_notes,?), Task_owner=? WHERE Task_id=?";
+    connection.query(
+      sql,
+      ["done", taskNoteString, username, taskId],
+      (err, results) => {
+        if (err) reject(err);
+        resolve(results[0]);
+      }
+    );
   });
 
   // Handle send emails
