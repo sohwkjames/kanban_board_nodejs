@@ -19,6 +19,13 @@ connection = mysql.createConnection(config);
 async function promoteTask2Done(req, res, next) {
   const { username, password, taskId, taskNote, appAcronym } = req.body;
 
+  //check for params
+  if (Object.keys(req.query).length > 0) {
+    return res.status(200).send({
+      code: "E007",
+    });
+  }
+
   if (!username || !password || !taskId || !appAcronym) {
     return res.status(200).send({
       code: "E003",
